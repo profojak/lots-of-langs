@@ -1,7 +1,13 @@
 #!/bin/bash
 
-# Print and execute command
-exe() { echo "$@"; "$@"; }
+# Print and execute command and exit on fail
+exe() {
+    echo "$@";
+    "$@";
+    if [ "$?" -ne 0 ]; then
+        exit 1
+    fi
+}
 
 # Clean
 if [ -n "$1" ]; then
