@@ -1,0 +1,121 @@
+module;
+
+#include <fstream>
+
+export module Camera;
+
+import Vector;
+
+export namespace ray {
+
+using Vector3f = math::Vector<float, 3>;
+
+/**
+ * @brief Camera class.
+ * @tparam T Floating type.
+ */
+class Camera {
+public:
+    /*! @brief Orientation configuration. */
+    struct Orientation {
+        /*! @brief Center. */
+        Vector3f look_from;
+        /*! @brief Focus point. */
+        Vector3f look_at;
+        /*! @brief Up vector. */
+        Vector3f up;
+
+        /*! @brief Default constructor. */
+        Orientation() noexcept : look_from{1, 1, 1}, look_at{0, 0, 0},
+            up{0, 1, 0} {}
+
+        /*! @brief Destructor. */
+        ~Orientation() noexcept = default;
+    };
+
+    /*! @brief Output image configuration. */
+    struct Image {
+        /*! @brief Image width. */
+        int image_width;
+        /*! @brief Aspect ratio. */
+        float aspect_ratio;
+
+        /*! @brief Default constructor. */
+        Image() noexcept : image_width{100}, aspect_ratio{1} {}
+
+        /*! @brief Destructor. */
+        ~Image() noexcept = default;
+    };
+
+    /*! @brief Lens configuration. */
+    struct Lens {
+        /*! @brief Vertical field of view. */
+        float vertical_fov;
+        /*! @brief Defocus angle. */
+        float defocus_angle;
+        /*! @brief Focus distance. */
+        float focus_distance;
+
+        /*! @brief Default constructor. */
+        Lens() noexcept : vertical_fov{30}, defocus_angle{6},
+            focus_distance{3.4} {}
+
+        /*! @brief Destructor. */
+        ~Lens() noexcept = default;
+    };
+
+    /*! @brief Sampling configuration. */
+    struct Sampling {
+        /*! @brief Number of samples per pixel. */
+        int samples{10};
+        /*! @brief Maximum depth of ray tracing recursion. */
+        int max_depth{10};
+
+        /*! @brief Default constructor. */
+        Sampling() noexcept : samples{10}, max_depth{10} {}
+
+        /*! @brief Destructor. */
+        ~Sampling() noexcept = default;
+    };
+
+private:
+    /*! @brief Orientation configuration. */
+    Orientation orientation_configuration;
+    /*! @brief Output image configuration. */
+    Image image_configuration;
+    /*! @brief Lens configuration. */
+    Lens lens_configuration;
+    /*! @brief Sampling configuration. */
+    Sampling sampling_configuration;
+
+    /*! @brief Output image file. */
+    std::ofstream file;
+    /*! @brief Image height. */
+    int image_height;
+    /*! @brief Weight of single sample on final pixel color. */
+    float pixel_sample_weight;
+
+    /*! @brief Position of upper left pixel. */
+    Vector3f pixel_up_left;
+    /*! @brief Horizontal change of pixel position. */
+    Vector3f pixel_delta_u;
+    /*! @brief Vertical change of pixel position. */
+    Vector3f pixel_delta_v;
+    /*! @brief Horizontal change of defocus disk. */
+    Vector3f defocus_disk_delta_u;
+    /*! @brief Vertical change of defocus disk. */
+    Vector3f defocus_disk_delta_v;
+
+public:
+    /*! @brief Configuration constructor. */
+    explicit Camera(Orientation orientation = {}, Image image = {},
+        Lens lens = {}, Sampling sampling = {});
+
+    /*! @brief Destructor. */
+    ~Camera() noexcept;
+
+    /*! @brief Render scene. */
+    void Render();
+};
+
+} // namespace ray
