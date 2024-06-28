@@ -214,7 +214,7 @@ public:
     friend inline Vector operator+(const Vector& left, const Vector& right) {
         Vector result;
         std::transform(std::execution::par_unseq,
-            left.begin(), left.end(), right.begin(), right.begin(),
+            left.begin(), left.end(), right.begin(), result.begin(),
             [](const auto left, const auto right) { return left + right; });
         return result;
     }
@@ -223,7 +223,7 @@ public:
     friend inline Vector operator-(const Vector& left, const Vector& right) {
         Vector result;
         std::transform(std::execution::par_unseq,
-            left.begin(), left.end(), right.begin(), right.begin(),
+            left.begin(), left.end(), right.begin(), result.begin(),
             [](const auto left, const auto right) { return left - right; });
         return result;
     }
@@ -232,7 +232,7 @@ public:
     friend inline Vector operator*(const Vector& left, const Vector& right) {
         Vector result;
         std::transform(std::execution::par_unseq,
-            left.begin(), left.end(), right.begin(), right.begin(),
+            left.begin(), left.end(), right.begin(), result.begin(),
             [](const auto left, const auto right) { return left * right; });
         return result;
     }
