@@ -1,0 +1,105 @@
+module;
+
+#include <execution>
+#include <limits>
+#include <random>
+
+export module Random;
+
+import Vector;
+
+export namespace ray {
+
+/*! @brief Random generator of numbers and vectors. */
+class Random {
+public:
+    /**
+     * @brief Generate random number.
+     * @tparam T Arithmetic type.
+     * @return Random number.
+     */
+    template<math::Arithmetic T>
+    [[nodiscard]] static auto Number() {
+        static std::uniform_real_distribution<T> distribution{T{0}, T{1}};
+        static std::mt19937 generator;
+        return distribution(generator);
+    }
+
+    /**
+     * @brief Generate random number within range.
+     * @tparam T Arithmetic type.
+     * @param min Minimum value.
+     * @param max Maximum value.
+     * @return Random number.
+     */
+    template<math::Arithmetic T>
+    [[nodiscard]] inline static auto Number(const T min, const T max) {
+        return min + (max - min) * Number<T>();
+    }
+
+    /**
+     * @brief Generate random vector.
+     * @tparam T Arithmetic type of elements.
+     * @tparam N Number of elements.
+     * @return Random vector.
+     */
+    template<math::Arithmetic T, std::integral auto N>
+        requires (N > 0)
+    [[nodiscard]] static auto Vector() {
+        math::Vector<T, N> result;
+        std::generate(result.begin(), result.end(),
+            []() { return Number<T>(); });
+        return result;
+    }
+
+    /**
+     * @brief Generate random vector within range.
+     * @tparam T Arithmetic type of vector elements.
+     * @tparam N Number of elements in vector.
+     * @param min Minimum value.
+     * @param max Maximum value.
+     * @return Random vector within range.
+     */
+    template<math::Arithmetic T, auto N>
+        requires std::is_integral_v<decltype(N)> && (N > 0)
+    [[nodiscard]] static auto Vector(const T min, const T max) {
+        math::Vector<T, N> result;
+        std::generate(result.begin(), result.end(),
+            [min, max]() { return Number<T>(min, max); });
+        return result;
+    }
+
+    /**
+     * @brief Generate random vector within unit sphere.
+     * @tparam T Arithmetic type of elements.
+     * @tparam N Number of elements.
+     * @return Random vector.
+     */
+    template<math::Arithmetic T, std::integral auto N>
+        requires (N > 0)
+    [[nodiscard]] static auto VectorUnitSphere() {
+        while(true)
+            if(const auto result = Vector<T, N>(T{-1}, T{1});
+                result.Length2() < T{1})
+                return result.Normalize();
+    }
+
+    /**
+     * @brief Generate random vector within unit disk.
+     * @tparam T Arithmetic type of elements.
+     * @tparam N Number of elements.
+     * @return Random vector.
+     */
+    template<math::Arithmetic T, std::integral auto N>
+        requires (N == 3)
+    [[nodiscard]] static auto VectorUnitDisk() {
+        while(true)
+            if(const auto result =
+                math::Vector<T, 3>(Number<T>(T{-1}, T{1}),
+                                   Number<T>(T{-1}, T{1}), T{0});
+                result.Length2() < T{1})
+                return result;
+    }
+};
+
+} // namespace ray

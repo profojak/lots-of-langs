@@ -5,6 +5,8 @@ module;
 
 #include <cmath>
 
+import Random;
+
 module Camera;
 
 namespace ray {
@@ -71,9 +73,16 @@ void Camera::Render() {
     std::cout << "\nDone!" << std::endl;
 }
 
-auto Camera::GetRay([[maybe_unused]] const int x,
-    [[maybe_unused]] const int y) const noexcept -> Ray {
-    return {};
+auto Camera::GetRay(const int x, const int y) const noexcept -> Ray {
+    const auto offset = std::make_pair(Random::Number<float>() - 0.5f,
+        Random::Number<float>() - 0.5f);
+    const auto pixel_sample = pixel_up_left +
+        (x + offset.first) * pixel_delta_u +
+        (y + offset.second) * pixel_delta_v;
+    const auto point = Random::VectorUnitDisk<float, 3>();
+    const auto origin = orientation_configuration.look_from +
+        point[0] * defocus_disk_delta_u + point[1] * defocus_disk_delta_v;
+    return Ray(origin, pixel_sample - origin);
 }
 
 } // namespace ray
