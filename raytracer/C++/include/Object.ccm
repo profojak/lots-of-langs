@@ -1,0 +1,99 @@
+module;
+
+#include <memory>
+#include <optional>
+#include <vector>
+
+export module Object;
+
+import Material;
+import Ray;
+import Vector;
+
+using Vector3f = math::Vector<float, 3>;
+
+export namespace ray {
+
+/*! @brief Object interface. */
+class Object {
+public:
+    /*! @brief Default virtual destructor. */
+    virtual ~Object() noexcept = default;
+
+    /**
+     * @brief Check if ray hits object.
+     * @param ray Ray.
+     * @param interval Interval of minimum and maximum distances.
+     * @return Optional hit record.
+     */
+    virtual auto CheckHit(const Ray& ray, const Interval interval) const ->
+        std::optional<Hit> = 0;
+};
+
+/*! @brief Container of hittable objects. */
+class Objects : public Object {
+private:
+    /*! @brief Vector of objects. */
+    std::vector<std::shared_ptr<Object>> objects;
+
+public:
+    /*! @brief Default constructor. */
+    Objects() noexcept = default;
+
+    /**
+     * @brief Add object to container.
+     * @param object Object.
+     */
+    void Add(const std::shared_ptr<Object> object) {
+        objects.push_back(object);
+    }
+
+    /*! @brief Clear container. */
+    void Clear() noexcept { objects.clear(); }
+
+    /**
+     * @brief Check if ray hits object.
+     * @param ray Ray.
+     * @param interval Interval of minimum and maximum distances.
+     * @return Optional hit record.
+     */
+    [[nodiscard]] auto CheckHit(const Ray& ray, const Interval interval)
+        const -> std::optional<Hit> override;
+};
+
+/*! @brief Sphere object. */
+class Sphere : public Object {
+private:
+    /*! @brief Center. */
+    Vector3f center;
+    /*! @brief Radius. */
+    float radius;
+    /*! @brief Material. */
+    std::shared_ptr<Material> material;
+
+public:
+    /*! @brief Default constructor. */
+    Sphere() noexcept = default;
+
+    /*! @brief Copy constructor that accepts center, radius, and material. */
+    explicit Sphere(const Vector3f& center, const float radius,
+        const std::shared_ptr<Material> material) noexcept :
+        center(center), radius(radius), material(material) {}
+
+    /*! @brief Move constructor that accepts center, radius, and material. */
+    explicit Sphere(Vector3f&& center, const float radius,
+        std::shared_ptr<Material>&& material) noexcept :
+        center(std::move(center)), radius(radius),
+        material(std::move(material)) {}
+
+    /**
+     * @brief Check if ray hits object.
+     * @param ray Ray.
+     * @param interval Interval of minimum and maximum distances.
+     * @return Optional hit record.
+     */
+    [[nodiscard]] auto CheckHit(const Ray& ray, const Interval interval)
+        const -> std::optional<Hit> override;
+};
+
+} // namespace ray
