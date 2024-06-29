@@ -8,10 +8,10 @@ export module Material;
 import Ray;
 import Vector;
 
-export namespace ray {
-
 using Vector3f = math::Vector<float, 3>;
 using Color = Vector3f;
+
+export namespace ray {
 
 class Material;
 
