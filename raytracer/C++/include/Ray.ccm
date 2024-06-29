@@ -1,6 +1,7 @@
 module;
 
 #include <iostream>
+#include <iomanip>
 
 export module Ray;
 
@@ -62,6 +63,84 @@ public:
     /*! @brief Output stream << operator. */
     friend std::ostream& operator<<(std::ostream& out, const Ray& ray) {
         return out << ray.origin << " -> " << ray.direction;
+    }
+};
+
+/*! @brief Interval class. */
+class Interval {
+private:
+    /*! @brief Minimum distance. */
+    float min;
+    /*! @brief Maximum distance. */
+    float max;
+
+public:
+    /*! @brief Default constructor. */
+    Interval() noexcept = default;
+
+    /*! @brief Copy constructor. */
+    Interval(const Interval&) noexcept = default;
+
+    /*! @brief Move constructor. */
+    Interval(Interval&&) noexcept = default;
+
+    /**
+     * @brief Construct interval with given minimum and maximum values.
+     * @param min Minimum.
+     * @param max Maximum.
+     */
+    explicit Interval(const float min, const float max) noexcept : min{min},
+        max{max} {}
+
+    /*! @brief Get minimum value. */
+    inline auto Min() const noexcept { return min; }
+
+    /*! @brief Get maximum value. */
+    inline auto Max() const noexcept { return max; }
+
+    /*! @brief Get size of interval. */
+    inline auto Size() const noexcept {
+        return max - min;
+    }
+
+    /**
+     * @brief Check if interval contains value.
+     * @param value Value to check.
+     * @return True if interval contains value, false otherwise.
+     */
+    inline auto Contains(const float value) const noexcept {
+        return min <= value && value <= max;
+    }
+
+    /**
+     * @brief Check if interval surrounds value.
+     * @param value Value to check.
+     * @return True if interval surrounds value, false otherwise.
+     */
+    inline auto Surrounds(const float value) const noexcept {
+        return min < value && value < max;
+    }
+
+    /**
+     * @brief Clamp value to interval.
+     * @param value Value to clamp.
+     * @return Clamped value.
+     */
+    inline auto Clamp(const float value) const noexcept {
+        if(value < min)
+            return min;
+        if(value > max)
+            return max;
+        return value;
+    }
+
+    /*! @brief Output stream << operator. */
+    friend std::ostream& operator<<(std::ostream& out,
+        const Interval& interval) {
+        out << '[' << std::setw(10) << std::setprecision(4) << std::fixed <<
+            interval.Min();
+        return out << std::setw(10) << std::setprecision(4) << std::fixed <<
+            interval.Max() << ']';
     }
 };
 
