@@ -154,7 +154,7 @@ public:
      */
     auto Refract(const Vector& normal, const T ratio) const {
         static_assert(N == 3);
-        const auto cos_theta = std::min(Dot(-*this, normal), T{1});
+        const auto cos_theta = std::min((-*this).Dot(normal), T{1});
         const auto perpendicular = ratio * (*this + cos_theta * normal);
         const auto parallel =
             -std::sqrt(std::abs(T{1} - perpendicular.Length2())) * normal;
