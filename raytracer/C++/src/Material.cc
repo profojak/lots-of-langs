@@ -59,4 +59,4 @@ auto Dielectric::Scatter(const Ray& ray, const Hit& hit) const ->
             Ray(hit.point, direction.Refract(hit.normal, index)));
 }
 
-};
+} // namespace ray
