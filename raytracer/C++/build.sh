@@ -28,9 +28,13 @@ FLAGS="-std=c++23 -Wall -Wextra -Wpedantic -Werror -O3"
 MODULES="-fprebuilt-module-path=bin -fprebuilt-module-path=$LIB/bin"
 mkdir -p bin/
 (cd $LIB && exe ./build.sh)
+exe clang++ $FLAGS -x c++-module include/Random.ccm --precompile $MODULES -o bin/Random.pcm
+exe clang++ $FLAGS -x c++-module include/Ray.ccm --precompile $MODULES -o bin/Ray.pcm
 exe clang++ $FLAGS -x c++-module include/Camera.ccm --precompile $MODULES -o bin/Camera.pcm
 exe clang++ $FLAGS src/Camera.cc $MODULES -c -o bin/Camera-src.o
 exe clang++ $FLAGS src/main.cc $MODULES -c -o bin/main.o
+exe clang++ $FLAGS bin/Random.pcm $MODULES -c -o bin/Random.o
+exe clang++ $FLAGS bin/Ray.pcm $MODULES -c -o bin/Ray.o
 exe clang++ $FLAGS bin/Camera.pcm $MODULES -c -o bin/Camera.o
-exe clang++ bin/main.o bin/Camera.o bin/Camera-src.o -o raytracer
+exe clang++ bin/main.o bin/Camera.o bin/Random.o bin/Ray.o bin/Camera-src.o -o raytracer
 exit 0
