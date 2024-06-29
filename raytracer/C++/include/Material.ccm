@@ -1,0 +1,147 @@
+module;
+
+#include <memory>
+#include <optional>
+
+export module Material;
+
+import Ray;
+import Vector;
+
+export namespace ray {
+
+using Vector3f = math::Vector<float, 3>;
+using Color = Vector3f;
+
+class Material;
+
+/*! @brief Hit record structure. */
+struct Hit {
+    /*! @brief Point of intersection. */
+    Vector3f point;
+    /*! @brief Normal at point of intersection. */
+    Vector3f normal;
+    /*! @brief Material of intersected object. */
+    std::shared_ptr<Material> material;
+    /*! @brief Distance from ray origin. */
+    float distance;
+    /*! @brief Whether ray hit front face. */
+    bool front_face;
+};
+
+/*! @brief Material interface. */
+class Material {
+public:
+    /*! @brief Default virtual destructor. */
+    virtual ~Material() noexcept = default;
+
+    /**
+     * @brief Scatter ray if object is hit.
+     * @param ray Ray.
+     * @param hit Hit record.
+     * @return Optional pair of color and scattered ray.
+     */
+    virtual auto Scatter(const Ray& ray, const Hit& hit) const ->
+        std::optional<std::pair<Color, Ray>> = 0;
+};
+
+/*! @brief Lambertian material class. */
+class Lambertian : public Material {
+private:
+    /*! @brief Albedo. */
+    Color albedo;
+
+public:
+    /*! @brief Default constructor disabled. */
+    Lambertian() noexcept = delete;
+
+    /*! @brief Copy constructor. */
+    Lambertian(const Lambertian&) noexcept = default;
+
+    /*! @brief Move constructor. */
+    Lambertian(Lambertian&&) noexcept = default;
+
+    /*! @brief Copy constructor that accepts color. */
+    explicit Lambertian(const Color& albedo) noexcept : albedo{albedo} {}
+
+    /*! @brief Move constructor that accepts color. */
+    explicit Lambertian(Color&& albedo) noexcept : albedo{std::move(albedo)} {}
+
+    /**
+     * @brief Scatter ray if object is hit.
+     * @param ray Ray.
+     * @param hit Hit record.
+     * @return Optional pair of color and scattered ray.
+     */
+    [[nodiscard]] auto Scatter(const Ray&, const Hit& hit) const ->
+        std::optional<std::pair<Color, Ray>> override;
+};
+
+/*! @brief Metal material class. */
+class Metal : public Material {
+private:
+    /*! @brief Albedo. */
+    Color albedo;
+    /*! @brief Fuzziness. */
+    float fuzziness;
+
+public:
+    /*! @brief Default constructor disabled. */
+    Metal() noexcept = delete;
+
+    /*! @brief Copy constructor. */
+    Metal(const Metal&) noexcept = default;
+
+    /*! @brief Move constructor. */
+    Metal(Metal&&) noexcept = default;
+
+    /*! @brief Copy constructor that accepts color and fuzziness. */
+    explicit Metal(const Color& albedo, const float fuzziness) noexcept :
+        albedo{albedo}, fuzziness{fuzziness < 1.0f ? fuzziness : 1.0f} {}
+
+    /*! @brief Move constructor that accepts color and fuzziness. */
+    explicit Metal(Color&& albedo, const float fuzziness) noexcept :
+        albedo{std::move(albedo)},
+        fuzziness{fuzziness < 1.0f ? fuzziness : 1.0f} {}
+
+    /**
+     * @brief Scatter ray if object is hit.
+     * @param ray Ray.
+     * @param hit Hit record.
+     * @return Optional pair of color and scattered ray.
+     */
+    [[nodiscard]] auto Scatter(const Ray&, const Hit& hit) const ->
+        std::optional<std::pair<Color, Ray>> override;
+};
+
+/*! @brief Dielectric material class. */
+class Dielectric : public Material {
+private:
+    /*! @brief Refraction index. */
+    float refraction_index;
+
+public:
+    /*! @brief Default constructor disabled. */
+    Dielectric() noexcept = delete;
+
+    /*! @brief Copy constructor. */
+    Dielectric(const Dielectric&) noexcept = default;
+
+    /*! @brief Move constructor. */
+    Dielectric(Dielectric&&) noexcept = default;
+
+    /*! @brief Copy constructor that accepts refraction index. */
+    explicit Dielectric(const float refraction_index) noexcept :
+        refraction_index{refraction_index} {}
+
+    /**
+     * @brief Scatter ray if object is hit.
+     * @param ray Ray.
+     * @param hit Hit record.
+     * @return Optional pair of color and scattered ray.
+     */
+    [[nodiscard]] auto Scatter(const Ray&, const Hit& hit) const ->
+        std::optional<std::pair<Color, Ray>> override;
+};
+
+} // namespace ray
