@@ -101,11 +101,9 @@ public:
      * @return Squared length.
      */
     inline auto Length2() const {
-        return std::reduce(std::execution::par_unseq,
+        return std::transform_reduce(std::execution::par_unseq,
             this->begin(), this->end(), T{0},
-            [](const auto sum, const auto value) {
-                return sum + value * value;
-            });
+            std::plus<>{}, [](const auto value) { return value * value; });
     }
 
     /**
@@ -115,7 +113,8 @@ public:
      */
     inline auto Dot(const Vector& vector) const {
         return std::transform_reduce(std::execution::par_unseq,
-            this->begin(), this->end(), vector.begin(), T{0});
+            this->begin(), this->end(), vector.begin(), T{0},
+            std::plus<>{}, std::multiplies<>{});
     }
 
     /**
