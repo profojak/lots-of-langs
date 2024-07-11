@@ -173,7 +173,7 @@ public:
     inline Vector& operator+=(const Vector& vector) {
         std::transform(std::execution::par_unseq,
             vector.begin(), vector.end(), this->begin(), this->begin(),
-            [](const auto left, const auto right){ return left + right; });
+            std::plus<>{});
         return *this;
     }
 
@@ -181,7 +181,7 @@ public:
     inline Vector& operator-=(const Vector& vector) {
         std::transform(std::execution::par_unseq,
             vector.begin(), vector.end(), this->begin(), this->begin(),
-            [](const auto left, const auto right){ return left - right; });
+            std::minus<>{});
         return *this;
     }
 
@@ -189,7 +189,7 @@ public:
     inline Vector& operator*=(const Vector& vector) {
         std::transform(std::execution::par_unseq,
             vector.begin(), vector.end(), this->begin(), this->begin(),
-            [](const auto left, const auto right){ return left * right; });
+            std::multiplies<>{});
         return *this;
     }
 
@@ -214,7 +214,7 @@ public:
         Vector result;
         std::transform(std::execution::par_unseq,
             left.begin(), left.end(), right.begin(), result.begin(),
-            [](const auto left, const auto right) { return left + right; });
+            std::plus<>{});
         return result;
     }
 
@@ -223,7 +223,7 @@ public:
         Vector result;
         std::transform(std::execution::par_unseq,
             left.begin(), left.end(), right.begin(), result.begin(),
-            [](const auto left, const auto right) { return left - right; });
+            std::minus<>{});
         return result;
     }
 
@@ -232,7 +232,7 @@ public:
         Vector result;
         std::transform(std::execution::par_unseq,
             left.begin(), left.end(), right.begin(), result.begin(),
-            [](const auto left, const auto right) { return left * right; });
+            std::multiplies<>{});
         return result;
     }
 
