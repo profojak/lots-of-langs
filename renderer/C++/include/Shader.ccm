@@ -1,0 +1,69 @@
+module;
+
+#include <array>
+#include <vector>
+
+import Image;
+import Model;
+import Vector;
+
+export module Shader;
+
+export using Vector2f = math::Vector<float, 2>;
+export using Vector3f = math::Vector<float, 3>;
+
+export namespace render {
+
+/*! @brief Shader. */
+class Shader {
+private:
+    /*! @brief Model. */
+    const Model& model;
+    /*! @brief Triangle vertices. */
+    std::array<Vector3f, 3> vertices;
+    /*! @brief Triangle normals. */
+    std::array<Vector3f, 3> normals;
+    /*! @brief Triangle texture coordinates. */
+    std::array<Vector2f, 3> texels;
+
+public:
+    /*! @brief Constructor. */
+    Shader(const Model& model) : model(model) {}
+
+    /*! @brief Destructor. */
+    ~Shader() noexcept = default;
+
+    /**
+     * @brief Compute barycentric coordinates.
+     * @param t0 First point.
+     * @param t1 Second point.
+     * @param t2 Third point.
+     * @param p Point to compute barycentric coordinates for.
+     */
+    [[nodiscard]] static auto Barycentric(const Vector3f t0, const Vector3f t1,
+        const Vector3f t2, const Vector3f p) -> Vector3f;
+
+    /**
+     * @brief Compute barycentric coordinates.
+     * @param t Triangle.
+     * @param p Point to compute barycentric coordinates for.
+     */
+    [[nodiscard]] static inline auto Barycentric(
+        const std::array<Vector3f, 3>& t, const Vector3f p) -> Vector3f {
+        return Barycentric(t[0], t[1], t[2], p);
+    }
+
+    /**
+     * @brief Load triangle to shader.
+     * @param face Triangle facet.
+     */
+    void LoadTriangle(const std::size_t face);
+
+    /**
+     * @brief Rasterize triangle.
+     * @param image Image.
+     */
+    void RenderTriangle(Image& image);
+};
+
+} // namespace render

@@ -2,6 +2,7 @@
 
 import Image;
 import Model;
+import Shader;
 
 using namespace render;
 
@@ -17,9 +18,16 @@ int main(int argc, char* argv[]) {
 
     Image image(WIDTH, HEIGHT, Image::Format::RGB);
     for(auto arg = 1; arg < argc; ++arg) {
-        [[maybe_unused]] auto model = Model::Load("../obj/" +
-            std::string{argv[arg]});
+        auto model = Model::Load("../obj/" + std::string{argv[arg]});
+        Shader shader(model);
+        for(auto i = 0u; i < model.FacesCount(); ++i) {
+            shader.LoadTriangle(i);
+            shader.RenderTriangle(image);
+        }
     }
+
+    image.FlipVertically();
+    image.WriteTgaFile("image.tga");
 
     return 0;
 }
