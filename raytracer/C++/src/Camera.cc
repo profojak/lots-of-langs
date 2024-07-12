@@ -23,7 +23,7 @@ Camera::Camera(Orientation orientation, Image image, Lens lens,
         throw std::runtime_error("Failed to open image file for writing");
 
     const auto viewport_height = 2.0f *
-        std::tan((lens_configuration.vertical_fov * M_PI / 180) / 2) *
+        std::tan((lens_configuration.vertical_fov * M_PI / 180.0f) / 2.0f) *
         lens_configuration.focus_distance;
     const auto viewport_width = viewport_height *
         (static_cast<float>(image.image_width) / image_height);
@@ -44,7 +44,7 @@ Camera::Camera(Orientation orientation, Image image, Lens lens,
     pixel_sample_weight = 1.0f / sampling.samples;
 
     const auto defocus_radius = lens_configuration.focus_distance *
-        std::tan((lens_configuration.defocus_angle * M_PI / 180) / 2);
+        std::tan((lens_configuration.defocus_angle * M_PI / 180.0f) / 2.0f);
     defocus_disk_delta_u = defocus_radius * u;
     defocus_disk_delta_v = defocus_radius * v;
 }

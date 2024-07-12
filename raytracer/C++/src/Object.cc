@@ -30,7 +30,7 @@ auto Sphere::CheckHit(const Ray& ray, const Interval interval) const ->
     const auto c = origin_center.Length2() - radius * radius;
     const auto discriminant = b * b - a * c;
 
-    if(discriminant < 0)
+    if(discriminant < 0.0f)
         return std::nullopt;
     const auto square_root = std::sqrt(discriminant);
     auto distance = (b - square_root) / a;
