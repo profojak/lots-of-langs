@@ -10,7 +10,7 @@ import Material;
 import Ray;
 import Vector;
 
-using Vector3f = math::Vector<float, 3>;
+export using Vector3f = math::Vector<float, 3>;
 
 export namespace ray {
 
