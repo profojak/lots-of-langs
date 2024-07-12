@@ -1,6 +1,7 @@
 #include <iostream>
 
 import Image;
+import Model;
 
 using namespace render;
 
@@ -15,6 +16,10 @@ int main(int argc, char* argv[]) {
     }
 
     Image image(WIDTH, HEIGHT, Image::Format::RGB);
+    for(auto arg = 1; arg < argc; ++arg) {
+        [[maybe_unused]] auto model = Model::Load("../obj/" +
+            std::string{argv[arg]});
+    }
 
     return 0;
 }

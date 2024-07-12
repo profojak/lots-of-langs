@@ -1,0 +1,114 @@
+module;
+
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+import Image;
+import Vector;
+
+export module Model;
+
+export using Vector2f = math::Vector<float, 2>;
+export using Vector3f = math::Vector<float, 3>;
+
+class ModelError : public std::logic_error {
+public:
+    /*! @brief Constructor. */
+    ModelError(const std::string& message) : std::logic_error(message) {}
+};
+
+export namespace render {
+
+/*! @brief Model. */
+class Model {
+private:
+    /*! @brief Vertices. */
+    std::vector<Vector3f> vertices;
+    /*! @brief Normals. */
+    std::vector<Vector3f> normals;
+    /*! @brief Texture coordinates. */
+    std::vector<Vector2f> texels;
+    /*! @brief Facet vertices. */
+    std::vector<int> facet_vertices;
+    /*! @brief Facet normals. */
+    std::vector<int> facet_normals;
+    /*! @brief Facet texture coordinates. */
+    std::vector<int> facet_texels;
+    /*! @brief Texture. */
+    Image texture;
+
+    /*! @brief Inaccessible default constructor. */
+    Model() noexcept = default;
+public:
+    /*! @brief Destructor. */
+    ~Model() noexcept = default;
+
+    /**
+     * @brief Factory method to load model from file.
+     * @param filename Filename.
+     */
+    [[nodiscard]] static auto Load(const std::string& filename) -> Model;
+
+    /*! @brief Get number of vertices. */
+    [[nodiscard]] inline auto VerticesCount() const noexcept -> std::size_t {
+        return vertices.size();
+    }
+
+    /*! @brief Get number of faces. */
+    [[nodiscard]] inline auto FacesCount() const noexcept -> std::size_t {
+        return facet_vertices.size() / 3;
+    }
+
+    /**
+     * @brief Get vertex at specified index.
+     * @param index Index.
+     */
+    [[nodiscard]] inline auto GetVertex(const std::size_t index) const ->
+        Vector3f {
+        return vertices[index];
+    }
+
+    /**
+     * @brief Get n-th vertex of i-th face.
+     * @param face Face index.
+     * @param vertex Vertex index.
+     */
+    [[nodiscard]] inline auto GetVertex(const std::size_t face,
+        const std::size_t vertex) const -> Vector3f {
+        return vertices[facet_vertices[face * 3 + vertex]];
+    }
+
+    /**
+     * @brief Get normal of n-th vertex of i-th face.
+     * @param face Face index.
+     * @param vertex Vertex index.
+     */
+    [[nodiscard]] inline auto GetNormal(const std::size_t face,
+        const std::size_t vertex) const -> Vector3f {
+        return normals[facet_normals[face * 3 + vertex]];
+    }
+
+    /**
+     * @brief Get texture coordinate of n-th vertex of i-th face.
+     * @param face Face index.
+     * @param vertex Vertex index.
+     */
+    [[nodiscard]] inline auto GetTexel(const std::size_t face,
+        const std::size_t vertex) const -> Vector2f {
+        return texels[facet_texels[face * 3 + vertex]];
+    }
+
+    /**
+     * @brief Sample texture.
+     * @param uv Texture coordinates.
+     * @return Pixel.
+     */
+    [[nodiscard]] inline auto GetTexturePixel(const Vector2f uv) const ->
+        Pixel {
+        return texture.GetPixel(uv[0] * texture.GetWidth(),
+            uv[1] * texture.GetHeight());
+    }
+};
+
+} // namespace render
