@@ -3,6 +3,8 @@ module;
 #include <iostream>
 #include <limits>
 #include <ranges>
+#include <thread>
+#include <vector>
 
 #include <cmath>
 
@@ -55,26 +57,55 @@ Camera::~Camera() noexcept {
 }
 
 void Camera::Render(const Object& scene) {
+    const auto threads_count = std::thread::hardware_concurrency();
+    const auto segment = image_height / threads_count;
+
+    std::vector<std::thread> threads;
+    threads.resize(threads_count);
+
+    std::vector<std::vector<Color>> colors;
+    colors.resize(threads_count);
+    for(auto& color : colors)
+        color.resize(image_configuration.image_width * segment);
+
+    const auto RenderSegment = [&](const int i,
+        const int y_start, const int y_end) -> void {
+        for(const auto& y : std::ranges::views::iota(y_start, y_end)) {
+            for(const auto& x :
+                std::ranges::views::iota(0, image_configuration.image_width)) {
+                Color color{0.0f, 0.0f, 0.0f};
+                for([[maybe_unused]] const auto& sample :
+                    std::ranges::views::iota(
+                        0, sampling_configuration.samples)) {
+                    const auto ray = GetRay(x, y);
+                    color += TraceRay(ray, scene,
+                        sampling_configuration.max_depth);
+                }
+                colors[i][(y - y_start) * image_configuration.image_width + x] =
+                    pixel_sample_weight * color;
+            }
+        }
+    };
+
+    std::cout << "Ray tracing..." << std::endl;
+
+    for(auto i = 0u; i < threads_count; ++i) {
+        const auto y_start = i * segment;
+        const auto y_end = (i + 1u) * segment;
+        if(i == threads_count - 1u)
+            threads[i] = std::thread(RenderSegment, i, y_start, image_height);
+        else
+            threads[i] = std::thread(RenderSegment, i, y_start, y_end);
+    }
+    for(auto& thread : threads)
+        thread.join();
+
     file << "P3\n" << image_configuration.image_width << ' ' <<
         image_height << "\n255\n";
-
-    for(const auto& y : std::ranges::views::iota(0, image_height)) {
-        if((y + 1) % 5 == 0)
-            std::cout << '*' << std::flush;
-
-        for(const auto& x :
-            std::ranges::views::iota(0, image_configuration.image_width)) {
-            Color color{0.0f, 0.0f, 0.0f};
-            for([[maybe_unused]] const auto& sample :
-                std::ranges::views::iota(0, sampling_configuration.samples)) {
-                const auto ray = GetRay(x, y);
-                color += TraceRay(ray, scene, sampling_configuration.max_depth);
-            }
-            WriteColor(pixel_sample_weight * color);
-        }
-    }
-
-    std::cout << "\nDone!" << std::endl;
+    for(const auto& color : colors)
+        for(const auto& pixel : color)
+            WriteColor(pixel);
+    std::cout << "Done!" << std::endl;
 }
 
 auto Camera::GetRay(const int x, const int y) const noexcept -> Ray {
