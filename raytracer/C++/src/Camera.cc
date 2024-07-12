@@ -87,7 +87,8 @@ void Camera::Render(const Object& scene) {
         }
     };
 
-    std::cout << "Ray tracing..." << std::endl;
+    std::cout << "Ray tracing on " << threads_count << " threads..." <<
+        std::endl;
 
     for(auto i = 0u; i < threads_count; ++i) {
         const auto y_start = i * segment;
