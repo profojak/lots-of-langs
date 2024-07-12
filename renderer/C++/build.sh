@@ -29,8 +29,14 @@ MODULES="-fprebuilt-module-path=bin -fprebuilt-module-path=$LIB/bin"
 mkdir -p bin/
 (cd $LIB && exe ./build.sh)
 exe clang++ $FLAGS -x c++-module include/Image.ccm --precompile $MODULES -o bin/Image.pcm
+exe clang++ $FLAGS -x c++-module include/Model.ccm --precompile $MODULES -o bin/Model.pcm
+exe clang++ $FLAGS -x c++-module include/Shader.ccm --precompile $MODULES -o bin/Shader.pcm
 exe clang++ $FLAGS src/Image.cc $MODULES -c -o bin/Image-src.o
+exe clang++ $FLAGS src/Model.cc $MODULES -c -o bin/Model-src.o
+exe clang++ $FLAGS src/Shader.cc $MODULES -c -o bin/Shader-src.o
 exe clang++ $FLAGS src/main.cc $MODULES -c -o bin/main.o
 exe clang++ $FLAGS bin/Image.pcm $MODULES -c -o bin/Image.o
-exe clang++ bin/main.o bin/Image.o bin/Image-src.o -o renderer
+exe clang++ $FLAGS bin/Model.pcm $MODULES -c -o bin/Model.o
+exe clang++ $FLAGS bin/Shader.pcm $MODULES -c -o bin/Shader.o
+exe clang++ bin/main.o bin/Image.o bin/Image-src.o bin/Model.o bin/Model-src.o bin/Shader.o bin/Shader-src.o -o renderer
 exit 0
