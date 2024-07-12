@@ -4,6 +4,8 @@ module;
 
 export module Camera;
 
+import Material;
+import Object;
 import Ray;
 import Vector;
 
@@ -112,9 +114,13 @@ public:
     /*! @brief Destructor. */
     ~Camera() noexcept;
 
-    /*! @brief Render scene. */
-    void Render();
+    /**
+     * @brief Render scene.
+     * @param scene Scene.
+     */
+    void Render(const Object& scene);
 
+private:
     /**
      * @brief Get ray for given pixel.
      * @param x X coordinate of pixel.
@@ -122,6 +128,22 @@ public:
      * @return Ray for given pixel.
      */
     [[nodiscard]] auto GetRay(const int x, const int y) const noexcept -> Ray;
+
+    /**
+     * @brief Trace ray.
+     * @param ray Ray.
+     * @param scene Scene.
+     * @param depth Current recursion depth.
+     * @return Color of pixel.
+     */
+    [[nodiscard]] auto TraceRay(const Ray& ray, const Object& scene,
+        const int depth) const -> Color;
+    
+    /**
+     * @brief Write pixel color to file.
+     * @param color Color.
+     */
+    void WriteColor(const Color& color) noexcept;
 };
 
 } // namespace ray

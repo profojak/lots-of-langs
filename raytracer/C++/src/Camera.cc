@@ -1,6 +1,7 @@
 module;
 
 #include <iostream>
+#include <limits>
 #include <ranges>
 
 #include <cmath>
@@ -53,7 +54,7 @@ Camera::~Camera() noexcept {
         file.close();
 }
 
-void Camera::Render() {
+void Camera::Render(const Object& scene) {
     file << "P3\n" << image_configuration.image_width << ' ' <<
         image_height << "\n255\n";
 
@@ -63,10 +64,13 @@ void Camera::Render() {
 
         for(const auto& x :
             std::ranges::views::iota(0, image_configuration.image_width)) {
+            Color color{0.0f, 0.0f, 0.0f};
             for([[maybe_unused]] const auto& sample :
                 std::ranges::views::iota(0, sampling_configuration.samples)) {
-                [[maybe_unused]] const auto ray = GetRay(x, y);
+                const auto ray = GetRay(x, y);
+                color += TraceRay(ray, scene, sampling_configuration.max_depth);
             }
+            WriteColor(pixel_sample_weight * color);
         }
     }
 
@@ -83,6 +87,41 @@ auto Camera::GetRay(const int x, const int y) const noexcept -> Ray {
     const auto origin = orientation_configuration.look_from +
         point[0] * defocus_disk_delta_u + point[1] * defocus_disk_delta_v;
     return Ray(origin, pixel_sample - origin);
+}
+
+auto Camera::TraceRay(const Ray& ray, const Object& scene, const int depth)
+    const -> Color {
+    if(depth <= 0)
+        return Color{0.0f, 0.0f, 0.0f};
+
+    if(const auto hit = scene.CheckHit(ray, Interval{1e-4f,
+        std::numeric_limits<float>::infinity()})) {
+        if(const auto scatter = hit->material->Scatter(ray, *hit)) {
+            const auto [attenuation, scattered] = *scatter;
+            return attenuation * TraceRay(scattered, scene, depth - 1);
+        }
+        return Color{0.0f, 0.0f, 0.0f};
+    }
+
+    const auto gradient = 0.5f * (ray.Direction().Normalize()[1] + 1.0f);
+    return (1.0f - gradient) * Color{1.0f, 1.0f, 1.0f} +
+        gradient * Color{0.5f, 0.7f, 1.0f};
+}
+
+void Camera::WriteColor(const Color& color) noexcept {
+    const auto GammaCorrect = [](const float value) noexcept {
+        if(value > 0.0f)
+            return std::sqrt(value);
+        return 0.0f;
+    };
+
+    static const auto intensity = Interval{0.0f, 1.0f - 1e-4f};
+    const auto r = GammaCorrect(color[0]);
+    const auto g = GammaCorrect(color[1]);
+    const auto b = GammaCorrect(color[2]);
+    file << static_cast<int>(255.999f * intensity.Clamp(r)) << ' ' <<
+        static_cast<int>(255.999f * intensity.Clamp(g)) << ' ' <<
+        static_cast<int>(255.999f * intensity.Clamp(b)) << '\n';
 }
 
 } // namespace ray
