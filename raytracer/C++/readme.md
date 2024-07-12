@@ -10,4 +10,13 @@ and `./build.sh clean` to clean everything up. The script also builds
 <a href="https://github.com/llvm/llvm-project.git">source</a>, commit hash
 `6c2f5d6cdeee1a458700e33797fd8df263b748b9`.
 
+<!-- Acknowledgments ---------------------------------------------------------->
+
+<h3>Acknowledgments</h3>
+All credit goes to the authors of
+<a href="https://github.com/RayTracing/raytracing.github.io">Ray Tracing in One Weekend</a>.
+The license of the original work is included. The entire code base of this
+repository, including the derived version of this program, is licensed under the
+MIT license.
+
 <!----------------------------------------------------------------------------->
