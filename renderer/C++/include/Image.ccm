@@ -3,6 +3,7 @@ module;
 #include <array>
 #include <fstream>
 #include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,12 @@ using std::uint8_t;
 using std::uint16_t;
 
 export module Image;
+
+class ImageError : public std::logic_error {
+public:
+    /*! @brief Constructor. */
+    ImageError(const std::string& message) : std::logic_error(message) {}
+};
 
 export namespace render {
 
