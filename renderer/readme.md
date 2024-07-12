@@ -11,7 +11,7 @@ during a bachelor course at [FEE CTU](https://fel.cvut.cz/en).
 <br><br>
 
 <div align="center">
-  <img src="image.png" alt="Image of two renderer Aston Martins.">
+  <img src="image.png" alt="Image of two renderer Aston Martins." height="360">
   <br>
   <sup>1935 Aston Martin 1.5-litre Ulster</sup>
 </div>
