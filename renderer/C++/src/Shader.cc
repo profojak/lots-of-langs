@@ -63,7 +63,7 @@ void Shader::RenderTriangle(Image& image) {
             p[2] = 0;
             for(auto i: {0, 1, 2})
                 p[2] += vertices[i][2] * barycentric[i];
-            Vector2f uv;
+            Vector2f uv{};
             for(auto i: {0, 1, 2})
                 uv += texels[i] * barycentric[i];
             const auto diffuse = model.GetTexturePixel(uv);
