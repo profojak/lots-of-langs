@@ -7,9 +7,6 @@ module Model;
 
 namespace render {
 
-#include <stdexcept>
-#include <string>
-
 auto Model::Load(const std::string& filename) -> Model {
     Model model;
     std::ifstream in(filename, std::ifstream::in);
