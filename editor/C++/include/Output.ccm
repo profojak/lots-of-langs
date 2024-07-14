@@ -1,0 +1,47 @@
+module;
+
+#include <chrono>
+#include <format>
+#include <string>
+
+import Terminal;
+
+export module Output;
+
+export namespace editor {
+
+/**
+ * @brief Draw lines.
+ * @param buffer Buffer.
+ */
+void DrawLines(std::string& buffer);
+
+/**
+ * @brief Draw status bar.
+ * @param buffer Buffer.
+ */
+void DrawStatusBar(std::string& buffer);
+
+/**
+ * @brief Draw message bar.
+ * @param buffer Buffer.
+ */
+void DrawMessageBar(std::string& buffer);
+
+/*! @brief Refresh screen. */
+void RefreshScreen();
+
+/**
+ * @brief Set status message.
+ * @param format Format string.
+ * @param args Arguments.
+ */
+template<typename... Args>
+void SetStatusMessage(std::string format, Args&&... args) {
+    const auto format_args = std::make_format_args(std::forward<Args>(args)...);
+    editor.status_message = std::vformat(format, format_args);
+    const auto time = std::chrono::system_clock::now();
+    editor.status_time = std::chrono::system_clock::to_time_t(time);
+}
+
+} // namespace editor

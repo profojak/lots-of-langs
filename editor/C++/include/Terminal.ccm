@@ -48,6 +48,26 @@ public:
     ~Editor();
 } editor;
 
+/*! @brief Key codes. */
+enum Key {
+    BACKSPACE = 127,
+    ARROW_UP = 1000,
+    ARROW_DOWN,
+    ARROW_LEFT,
+    ARROW_RIGHT,
+    PAGE_UP,
+    PAGE_DOWN,
+    HOME,
+    END,
+    DELETE
+};
+
+/**
+ * @brief Read key.
+ * @return Key code.
+ */
+int ReadKey();
+
 /**
  * @brief Get cursor position.
  * @return Rows and columns.

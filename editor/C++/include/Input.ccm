@@ -1,0 +1,10 @@
+module;
+
+export module Input;
+
+export namespace editor {
+
+/*! @brief Process key press. */
+void ProcessKeypress();
+
+} // namespace editor
