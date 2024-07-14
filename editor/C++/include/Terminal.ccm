@@ -1,0 +1,63 @@
+module;
+
+#include <chrono>
+#include <optional>
+
+#include <termios.h>
+
+export module Terminal;
+
+export namespace editor {
+
+/*! @brief Editor. */
+extern class Editor {
+public:
+    /*! @brief Cursor X coordinate. */
+    int cursor_x;
+    /*! @brief Cursor Y coordinate. */
+    int cursor_y;
+    /*! @brief Rendered cursor X coordinate. */
+    int rendered_x;
+    /*! @brief Screen rows. */
+    int screen_rows;
+    /*! @brief Screen columns. */
+    int screen_cols;
+    /*! @brief Row offset. */
+    int row_offset;
+    /*! @brief Column offset. */
+    int col_offset;
+    /*! @brief Number of lines in file. */
+    int lines_count;
+    /*! @brief Lines. */
+    //struct line_t *line;
+    /*! @brief File dirty flag. */
+    int dirty;
+    /*! @brief Filename. */
+    std::string filename;
+    /*! @brief Status message. */
+    std::string status_message;
+    /*! @brief Status message time. */
+    std::time_t status_time;
+    /*! @brief Original termios configuration. */
+    struct termios original_termios;
+
+    /*! @brief Default constructor. */
+    Editor();
+
+    /*! @brief Destructor. */
+    ~Editor();
+} editor;
+
+/**
+ * @brief Get cursor position.
+ * @return Rows and columns.
+ */
+std::optional<std::pair<int, int>> GetCursorPosition() noexcept;
+
+/**
+ * @brief Get window size.
+ * @return Rows and columns.
+ */
+std::optional<std::pair<int, int>> GetWindowSize() noexcept;
+
+} // namespace editor
