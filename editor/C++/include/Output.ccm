@@ -10,6 +10,9 @@ export module Output;
 
 export namespace editor {
 
+/*! @brief Scroll editor view. */
+void Scroll();
+
 /**
  * @brief Draw lines.
  * @param buffer Buffer.

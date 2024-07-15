@@ -5,6 +5,8 @@ module;
 
 #include <termios.h>
 
+import Input;
+
 export module Terminal;
 
 export namespace editor {
@@ -29,7 +31,7 @@ public:
     /*! @brief Number of lines in file. */
     int lines_count;
     /*! @brief Lines. */
-    //struct line_t *line;
+    std::vector<Line> lines;
     /*! @brief File dirty flag. */
     int dirty;
     /*! @brief Filename. */

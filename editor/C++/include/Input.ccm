@@ -1,8 +1,24 @@
 module;
 
+#include <string>
+
 export module Input;
 
 export namespace editor {
+
+struct Line {
+    /*! @brief Characters. */
+    std::string characters;
+    /*! @brief Rendered characters. */
+    std::string rendered_characters;
+
+    /**
+     * @brief Convert cursor X coordinate to rendered X coordinate.
+     * @param cursor_x Cursor X coordinate.
+     * @return Rendered X coordinate.
+     */
+    auto CursorXToRenderedX(int cursor_x) noexcept -> int;
+};
 
 /*! @brief Process key press. */
 void ProcessKeypress();
