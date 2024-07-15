@@ -28,6 +28,33 @@ auto Line::CursorXToRenderedX(int cursor_x) noexcept -> int {
     return rendered_x;
 }
 
+void Line::Update() noexcept {
+    auto tabs = 0;
+    for(const auto& c : characters)
+        if(c == '\t')
+            tabs++;
+    rendered_characters.resize(characters.size() + tabs * (TAB_SPACES - 1));
+
+    auto index = 0;
+    for(const auto& c : characters) {
+        if(c == '\t') {
+            rendered_characters[index++] = ' ';
+            while(index % TAB_SPACES != 0)
+                rendered_characters[index++] = ' ';
+        } else
+            rendered_characters[index++] = c;
+    }
+}
+
+void InsertLine(int at, const std::string& str) noexcept {
+    if(at < 0 || static_cast<unsigned long>(at) > editor.lines.size())
+        return;
+    editor.lines.insert(editor.lines.begin() + at, Line{});
+    editor.lines[at].characters = str;
+    editor.lines[at].Update();
+    editor.dirty++;
+}
+
 void ProcessKeypress() noexcept {
     auto c = ReadKey();
     switch(c) {

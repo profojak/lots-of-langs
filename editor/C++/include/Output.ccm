@@ -35,6 +35,12 @@ void DrawMessageBar(std::string& buffer) noexcept;
 void RefreshScreen() noexcept;
 
 /**
+ * @brief Open file.
+ * @param filename Filename.
+ */
+void OpenFile(std::string_view filename) noexcept;
+
+/**
  * @brief Set status message.
  * @param format Format string.
  * @param args Arguments.

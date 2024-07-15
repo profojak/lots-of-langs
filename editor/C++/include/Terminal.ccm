@@ -28,8 +28,6 @@ public:
     int row_offset;
     /*! @brief Column offset. */
     int col_offset;
-    /*! @brief Number of lines in file. */
-    int lines_count;
     /*! @brief Lines. */
     std::vector<Line> lines;
     /*! @brief File dirty flag. */

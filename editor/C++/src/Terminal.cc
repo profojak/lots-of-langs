@@ -16,7 +16,7 @@ class Editor editor;
 
 Editor::Editor() noexcept : cursor_x{0}, cursor_y{0}, rendered_x{0},
     screen_rows{0}, screen_cols{0}, row_offset{0}, col_offset{0},
-    lines_count{0}, dirty{0}, status_time{0} {
+    dirty{0}, status_time{0} {
     if(tcgetattr(STDIN_FILENO, &original_termios) == -1) {
         std::cerr << "Error getting terminal attributes" << std::endl;
         std::terminate();

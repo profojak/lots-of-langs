@@ -18,7 +18,17 @@ struct Line {
      * @return Rendered X coordinate.
      */
     auto CursorXToRenderedX(int cursor_x) noexcept -> int;
+
+    /*! @brief Update after modification. */
+    void Update() noexcept;
 };
+
+/**
+ * @brief Insert line.
+ * @param at Position.
+ * @param str String.
+ */
+void InsertLine(int at, const std::string& str) noexcept;
 
 /*! @brief Process key press. */
 void ProcessKeypress() noexcept;

@@ -1,10 +1,12 @@
 module;
 
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <ranges>
 #include <string>
 
+import Input;
 import Terminal;
 
 module Output;
@@ -16,7 +18,7 @@ constexpr const std::string_view VERSION{"0.0.1"};
 
 void Scroll() noexcept {
     editor.rendered_x = 0;
-    if(editor.cursor_y < editor.lines_count)
+    if(static_cast<unsigned long>(editor.cursor_y) < editor.lines.size())
         editor.rendered_x = editor.lines[editor.cursor_y].CursorXToRenderedX(
             editor.cursor_x);
     
@@ -33,8 +35,8 @@ void Scroll() noexcept {
 void DrawLines(std::string& buffer) noexcept {
     for(const auto& y : std::ranges::views::iota(0, editor.screen_rows)) {
         auto file_line = y + editor.row_offset;
-        if(file_line >= editor.lines_count) {
-            if(editor.lines_count == 0 && y == editor.screen_rows / 3) {
+        if(static_cast<unsigned long>(file_line) >= editor.lines.size()) {
+            if(editor.lines.size() == 0 && y == editor.screen_rows / 3) {
                 std::string welcome = "Text editor - version " +
                     std::string{ VERSION };
                 if(welcome.size() >
@@ -50,7 +52,14 @@ void DrawLines(std::string& buffer) noexcept {
             } else
                 buffer.append("~");
         } else {
-
+            int length = editor.lines[file_line].rendered_characters.size() -
+                editor.col_offset;
+            if(length < 0)
+                length = 0;
+            if(length > editor.screen_cols)
+                length = editor.screen_cols;
+            buffer.append(editor.lines[file_line].rendered_characters,
+                editor.col_offset, length);
         }
 
         buffer.append("\x1b[K\r\n");
@@ -58,7 +67,34 @@ void DrawLines(std::string& buffer) noexcept {
 }
 
 void DrawStatusBar(std::string& buffer) noexcept {
-    buffer.append("\x1b[K\r\n");
+    buffer.append("\x1b[7m");
+
+    std::string status = editor.filename.empty() ? "[No Name]" :
+        editor.filename;
+    status.append(" - ");
+    status.append(std::to_string(editor.lines.size()));
+    status.append(" lines");
+    status.append(editor.dirty ? " (modified)" : "");
+
+    std::string right_status = std::to_string(editor.cursor_y + 1);
+    right_status.append("/");
+    right_status.append(std::to_string(editor.lines.size()));
+
+    if(status.size() > static_cast<unsigned long>(editor.screen_cols))
+        status.resize(editor.screen_cols);
+    buffer.append(status);
+    int length = status.size();
+    while(length < editor.screen_cols) {
+        if(editor.screen_cols - status.size() == right_status.size()) {
+            buffer.append(right_status);
+            break;
+        } else {
+            buffer.append(" ");
+            length++;
+        }
+    }
+
+    buffer.append("\x1b[m\r\n");
 }
 
 void DrawMessageBar(std::string& buffer) noexcept {
@@ -81,8 +117,33 @@ void RefreshScreen() noexcept {
     DrawStatusBar(buffer);
     DrawMessageBar(buffer);
 
+    buffer.append("\x1b[");
+    buffer.append(std::to_string(editor.cursor_y - editor.row_offset + 1));
+    buffer.append(";");
+    buffer.append(std::to_string(editor.rendered_x - editor.col_offset + 1));
+    buffer.append("H");
+
     buffer.append("\x1b[?25h");
     std::cout << buffer << std::flush;
+}
+
+void OpenFile(std::string_view filename) noexcept {
+    editor.filename = filename;
+
+    std::ifstream file{editor.filename, std::ios::in};
+    if(!file.is_open()) {
+        std::cerr << "Error opening file" << std::endl;
+        std::terminate();
+    }
+
+    std::string line;
+    while(std::getline(file, line)) {
+        while(!line.empty() && (line.back() == '\n' || line.back() == '\r'))
+            line.pop_back();
+        InsertLine(editor.lines.size(), line);
+    }
+
+    editor.dirty = 0;
 }
 
 } // namespace editor
