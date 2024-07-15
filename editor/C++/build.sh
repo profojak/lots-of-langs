@@ -23,9 +23,15 @@ fi
 # Build
 FLAGS="-std=c++23 -Wall -Wextra -Wpedantic -Werror -O3"
 mkdir -p bin/
-exe clang++ $FLAGS -x c++-module include/Terminal.ccm --precompile -o bin/Terminal.pcm
+exe clang++ $FLAGS -x c++-module include/Input.ccm --precompile -o bin/Input.pcm
+exe clang++ $FLAGS -x c++-module include/Terminal.ccm --precompile -fprebuilt-module-path=bin/ -o bin/Terminal.pcm
+exe clang++ $FLAGS -x c++-module include/Output.ccm --precompile -fprebuilt-module-path=bin/ -o bin/Output.pcm
 exe clang++ $FLAGS src/Terminal.cc -fprebuilt-module-path=bin/ -c -o bin/Terminal-src.o
+exe clang++ $FLAGS src/Input.cc -fprebuilt-module-path=bin/ -c -o bin/Input-src.o
+exe clang++ $FLAGS src/Output.cc -fprebuilt-module-path=bin/ -c -o bin/Output-src.o
 exe clang++ $FLAGS src/main.cc -fprebuilt-module-path=bin/ -c -o bin/main.o
 exe clang++ $FLAGS bin/Terminal.pcm -fprebuilt-module-path=bin/ -c -o bin/Terminal.o
-exe clang++ bin/main.o bin/Terminal.o bin/Terminal-src.o -o editor
+exe clang++ $FLAGS bin/Input.pcm -fprebuilt-module-path=bin/ -c -o bin/Input.o
+exe clang++ $FLAGS bin/Output.pcm -fprebuilt-module-path=bin/ -c -o bin/Output.o
+exe clang++ bin/main.o bin/Terminal.o bin/Terminal-src.o bin/Input.o bin/Input-src.o bin/Output.o bin/Output-src.o -o editor
 exit 0
