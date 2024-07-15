@@ -14,9 +14,9 @@ namespace editor {
 
 class Editor editor;
 
-Editor::Editor() : cursor_x{0}, cursor_y{0}, rendered_x{0}, screen_rows{0},
-    screen_cols{0}, row_offset{0}, col_offset{0}, lines_count{0}, dirty{0},
-    status_time{0} {
+Editor::Editor() noexcept : cursor_x{0}, cursor_y{0}, rendered_x{0},
+    screen_rows{0}, screen_cols{0}, row_offset{0}, col_offset{0},
+    lines_count{0}, dirty{0}, status_time{0} {
     if(tcgetattr(STDIN_FILENO, &original_termios) == -1) {
         std::cerr << "Error getting terminal attributes" << std::endl;
         std::terminate();
@@ -44,14 +44,14 @@ Editor::Editor() : cursor_x{0}, cursor_y{0}, rendered_x{0}, screen_rows{0},
     }
 }
 
-Editor::~Editor() {
+Editor::~Editor() noexcept {
     if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &original_termios) == -1) {
         std::cerr << "Error setting terminal attributes" << std::endl;
         std::terminate();
     }
 }
 
-int ReadKey() {
+auto ReadKey() noexcept -> int {
     int nread;
     char c;
     while((nread = read(STDIN_FILENO, &c, 1)) != 1)
@@ -99,7 +99,7 @@ int ReadKey() {
         return c;
 }
 
-std::optional<std::pair<int, int>> GetCursorPosition() noexcept {
+auto GetCursorPosition() noexcept -> std::optional<std::pair<int, int>> {
     std::string buffer;
     char ch;
 
@@ -117,7 +117,7 @@ std::optional<std::pair<int, int>> GetCursorPosition() noexcept {
     return std::make_pair(rows, cols);
 }
 
-std::optional<std::pair<int, int>> GetWindowSize() noexcept {
+auto GetWindowSize() noexcept -> std::optional<std::pair<int, int>> {
     struct winsize ws;
     if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
         std::cout << "\x1b[999C\x1b[999B" << std::flush;

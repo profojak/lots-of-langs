@@ -21,6 +21,6 @@ struct Line {
 };
 
 /*! @brief Process key press. */
-void ProcessKeypress();
+void ProcessKeypress() noexcept;
 
 } // namespace editor

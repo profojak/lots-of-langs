@@ -11,28 +11,28 @@ export module Output;
 export namespace editor {
 
 /*! @brief Scroll editor view. */
-void Scroll();
+void Scroll() noexcept;
 
 /**
  * @brief Draw lines.
  * @param buffer Buffer.
  */
-void DrawLines(std::string& buffer);
+void DrawLines(std::string& buffer) noexcept;
 
 /**
  * @brief Draw status bar.
  * @param buffer Buffer.
  */
-void DrawStatusBar(std::string& buffer);
+void DrawStatusBar(std::string& buffer) noexcept;
 
 /**
  * @brief Draw message bar.
  * @param buffer Buffer.
  */
-void DrawMessageBar(std::string& buffer);
+void DrawMessageBar(std::string& buffer) noexcept;
 
 /*! @brief Refresh screen. */
-void RefreshScreen();
+void RefreshScreen() noexcept;
 
 /**
  * @brief Set status message.
@@ -40,7 +40,7 @@ void RefreshScreen();
  * @param args Arguments.
  */
 template<typename... Args>
-void SetStatusMessage(std::string format, Args&&... args) {
+void SetStatusMessage(std::string format, Args&&... args) noexcept {
     const auto format_args = std::make_format_args(std::forward<Args>(args)...);
     editor.status_message = std::vformat(format, format_args);
     const auto time = std::chrono::system_clock::now();

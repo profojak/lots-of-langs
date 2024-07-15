@@ -14,7 +14,7 @@ namespace editor {
 /*! @brief Editor version. */
 constexpr const std::string_view VERSION{"0.0.1"};
 
-void Scroll() {
+void Scroll() noexcept {
     editor.rendered_x = 0;
     if(editor.cursor_y < editor.lines_count)
         editor.rendered_x = editor.lines[editor.cursor_y].CursorXToRenderedX(
@@ -30,7 +30,7 @@ void Scroll() {
         editor.col_offset = editor.rendered_x - editor.screen_cols + 1;
 }
 
-void DrawLines(std::string& buffer) {
+void DrawLines(std::string& buffer) noexcept {
     for(const auto& y : std::ranges::views::iota(0, editor.screen_rows)) {
         auto file_line = y + editor.row_offset;
         if(file_line >= editor.lines_count) {
@@ -57,11 +57,11 @@ void DrawLines(std::string& buffer) {
     }
 }
 
-void DrawStatusBar(std::string& buffer) {
+void DrawStatusBar(std::string& buffer) noexcept {
     buffer.append("\x1b[K\r\n");
 }
 
-void DrawMessageBar(std::string& buffer) {
+void DrawMessageBar(std::string& buffer) noexcept {
     buffer.append("\x1b[K");
     if(editor.status_message.size() >
         static_cast<unsigned long>(editor.screen_cols))
@@ -71,7 +71,7 @@ void DrawMessageBar(std::string& buffer) {
         buffer.append(editor.status_message);
 }
 
-void RefreshScreen() {
+void RefreshScreen() noexcept {
     Scroll();
 
     std::string buffer;

@@ -44,10 +44,10 @@ public:
     struct termios original_termios;
 
     /*! @brief Default constructor. */
-    Editor();
+    Editor() noexcept;
 
     /*! @brief Destructor. */
-    ~Editor();
+    ~Editor() noexcept;
 } editor;
 
 /*! @brief Key codes. */
@@ -68,18 +68,18 @@ enum Key {
  * @brief Read key.
  * @return Key code.
  */
-int ReadKey();
+auto ReadKey() noexcept -> int;
 
 /**
  * @brief Get cursor position.
  * @return Rows and columns.
  */
-std::optional<std::pair<int, int>> GetCursorPosition() noexcept;
+auto GetCursorPosition() noexcept -> std::optional<std::pair<int, int>>;
 
 /**
  * @brief Get window size.
  * @return Rows and columns.
  */
-std::optional<std::pair<int, int>> GetWindowSize() noexcept;
+auto GetWindowSize() noexcept -> std::optional<std::pair<int, int>>;
 
 } // namespace editor

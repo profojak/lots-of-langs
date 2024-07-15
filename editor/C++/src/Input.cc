@@ -28,7 +28,7 @@ auto Line::CursorXToRenderedX(int cursor_x) noexcept -> int {
     return rendered_x;
 }
 
-void ProcessKeypress() {
+void ProcessKeypress() noexcept {
     auto c = ReadKey();
     switch(c) {
         case CONTROL_KEY('q'):
