@@ -47,12 +47,33 @@ void Line::Update() noexcept {
     }
 }
 
+void Line::AppendString(const std::string& str) noexcept {
+    characters.append(str);
+    Update();
+    editor.dirty++;
+}
+
+void Line::DeleteChar(int at) noexcept {
+    if(at < 0 || static_cast<unsigned long>(at) >= characters.size())
+        return;
+    characters.erase(at, 1);
+    Update();
+    editor.dirty++;
+}
+
 void InsertLine(int at, const std::string& str) noexcept {
     if(at < 0 || static_cast<unsigned long>(at) > editor.lines.size())
         return;
     editor.lines.insert(editor.lines.begin() + at, Line{});
     editor.lines[at].characters = str;
     editor.lines[at].Update();
+    editor.dirty++;
+}
+
+void DeleteLine(int at) noexcept {
+    if(at < 0 || static_cast<unsigned long>(at) >= editor.lines.size())
+        return;
+    editor.lines.erase(editor.lines.begin() + at);
     editor.dirty++;
 }
 
@@ -68,6 +89,24 @@ void InsertNewLine() noexcept {
     }
     editor.cursor_y++;
     editor.cursor_x = 0;
+}
+
+void DeleteChar() noexcept {
+    if(static_cast<unsigned long>(editor.cursor_y) >= editor.lines.size())
+        return;
+    if(editor.cursor_x == 0 && editor.cursor_y == 0)
+        return;
+
+    auto& line = editor.lines[editor.cursor_y];
+    if(editor.cursor_x > 0) {
+        line.DeleteChar(editor.cursor_x - 1);
+        editor.cursor_x--;
+    } else {
+        editor.cursor_x = editor.lines[editor.cursor_y - 1].characters.size();
+        editor.lines[editor.cursor_y - 1].AppendString(line.characters);
+        DeleteLine(editor.cursor_y);
+        editor.cursor_y--;
+    }
 }
 
 void MoveCursor(int key) noexcept {
@@ -148,6 +187,9 @@ void ProcessKeypress() noexcept {
         case BACKSPACE:
         case CONTROL_KEY('h'):
         case DELETE:
+            if(c == DELETE)
+                MoveCursor(ARROW_RIGHT);
+            DeleteChar();
             break;
         
         case PAGE_UP:

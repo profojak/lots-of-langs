@@ -21,6 +21,18 @@ struct Line {
 
     /*! @brief Update after modification. */
     void Update() noexcept;
+
+    /**
+    * @brief Append string.
+    * @param str String.
+    */
+    void AppendString(const std::string& str) noexcept;
+
+    /**
+    * @brief Delete character.
+    * @param at Position.
+    */
+    void DeleteChar(int at) noexcept;
 };
 
 /**
@@ -30,8 +42,17 @@ struct Line {
  */
 void InsertLine(int at, const std::string& str) noexcept;
 
+/**
+ * @brief Delete line.
+ * @param at Position.
+ */
+void DeleteLine(int at) noexcept;
+
 /*! @brief Insert new line. */
 void InsertNewLine() noexcept;
+
+/*! @brief Delete character. */
+void DeleteChar() noexcept;
 
 /**
  * @brief Move cursor.
