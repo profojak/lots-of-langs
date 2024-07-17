@@ -85,7 +85,8 @@ void DrawStatusBar(std::string& buffer) noexcept {
     buffer.append(status);
     int length = status.size();
     while(length < editor.screen_cols) {
-        if(editor.screen_cols - status.size() == right_status.size()) {
+        if(static_cast<unsigned long>(editor.screen_cols - length) ==
+            right_status.size()) {
             buffer.append(right_status);
             break;
         } else {
