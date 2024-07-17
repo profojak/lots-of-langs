@@ -40,6 +40,9 @@ void RefreshScreen() noexcept;
  */
 void OpenFile(std::string_view filename) noexcept;
 
+/*! @brief Save file. */
+void SaveFile(void) noexcept;
+
 /**
  * @brief Set status message.
  * @param format Format string.

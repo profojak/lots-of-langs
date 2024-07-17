@@ -68,6 +68,13 @@ void InsertNewLine() noexcept;
 void DeleteChar() noexcept;
 
 /**
+ * @brief Ask user for text input.
+ * @param prompt Prompt.
+ * @return Text.
+ */
+std::string Prompt(const std::string& prompt);
+
+/**
  * @brief Move cursor.
  * @param key Key code.
  */

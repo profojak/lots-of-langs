@@ -124,6 +124,29 @@ void DeleteChar() noexcept {
     }
 }
 
+std::string Prompt(const std::string& prompt) {
+    std::string buffer = "";
+    while(true) {
+        SetStatusMessage(prompt, buffer);
+        RefreshScreen();
+
+        auto c = ReadKey();
+        if(c == DELETE || c == CONTROL_KEY('h') || c == BACKSPACE) {
+            if(!buffer.empty())
+                buffer.pop_back();
+        } else if(c == '\x1b') {
+            SetStatusMessage("");
+            return "";
+        } else if(c == '\r') {
+            if(!buffer.empty()) {
+                SetStatusMessage("");
+                return buffer;
+            }
+        } else if(!iscntrl(c) && c < 128)
+            buffer.push_back(c);
+    }
+}
+
 void MoveCursor(int key) noexcept {
     auto line = (static_cast<unsigned long>(editor.cursor_y) >=
         editor.lines.size()) ? nullptr : &editor.lines[editor.cursor_y];
@@ -187,6 +210,7 @@ void ProcessKeypress() noexcept {
             break;
 
         case CONTROL_KEY('s'):
+            SaveFile();
             break;
         
         case HOME:

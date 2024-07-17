@@ -146,4 +146,28 @@ void OpenFile(std::string_view filename) noexcept {
     editor.dirty = 0;
 }
 
+void SaveFile(void) noexcept {
+    if(editor.filename.empty()) {
+        editor.filename = Prompt("Save as: {}");
+        if(editor.filename.empty()) {
+            SetStatusMessage("Save aborted");
+            return;
+        }
+    }
+
+    std::ofstream file{editor.filename, std::ios::out};
+    if(file.is_open()) {
+        int length = 0;
+        for(const auto& line : editor.lines) {
+            file << line.characters << '\n';
+            length += line.characters.size() + 1;
+        }
+        file.close();
+        editor.dirty = 0;
+        SetStatusMessage("{} bytes written to disk", length);
+        return;
+    }
+    SetStatusMessage("Can't save!");
+}
+
 } // namespace editor
