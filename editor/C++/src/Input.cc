@@ -3,6 +3,7 @@ module;
 #include <iostream>
 #include <ranges>
 
+import Output;
 import Terminal;
 
 module Input;
@@ -13,7 +14,7 @@ namespace editor {
 constexpr const auto TAB_SPACES = 8;
 
 /*! @brief Number of confirmations to quit. */
-//constexpr const auto QUIT_TIMES = 3;
+constexpr const auto QUIT_TIMES = 3;
 
 /*! @brief Control key. */
 const auto CONTROL_KEY = [](const auto key) { return key & 0x1f; };
@@ -55,10 +56,36 @@ void InsertLine(int at, const std::string& str) noexcept {
     editor.dirty++;
 }
 
+void InsertNewLine() noexcept {
+    if(editor.cursor_x == 0)
+        InsertLine(editor.cursor_y, "");
+    else {
+        auto& line = editor.lines[editor.cursor_y];
+        InsertLine(editor.cursor_y + 1,
+            line.characters.substr(editor.cursor_x));
+        line.characters = line.characters.substr(0, editor.cursor_x);
+        line.Update();
+    }
+    editor.cursor_y++;
+    editor.cursor_x = 0;
+}
+
 void ProcessKeypress() noexcept {
+    static auto quit_times = QUIT_TIMES;
     auto c = ReadKey();
     switch(c) {
+        case '\r':
+            InsertNewLine();
+            break;
+
         case CONTROL_KEY('q'):
+            if(editor.dirty && quit_times > 0) {
+                SetStatusMessage(
+                    "File has unsaved changes! Press Ctrl-Q {} more times to quit.",
+                    quit_times);
+                quit_times--;
+                return;
+            }
             std::cout << "\x1b[2J\x1b[H";
             exit(0);
             break;

@@ -30,6 +30,9 @@ struct Line {
  */
 void InsertLine(int at, const std::string& str) noexcept;
 
+/*! @brief Insert new line. */
+void InsertNewLine() noexcept;
+
 /*! @brief Process key press. */
 void ProcessKeypress() noexcept;
 
