@@ -22,6 +22,7 @@ deeper into.
 
 <div align="center">
   <i>Programs have been written in...</i><br><br>
+  C++
 </div>
 
 <!-- Acknowledgments ---------------------------------------------------------->
