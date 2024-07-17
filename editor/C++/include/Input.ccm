@@ -33,6 +33,12 @@ void InsertLine(int at, const std::string& str) noexcept;
 /*! @brief Insert new line. */
 void InsertNewLine() noexcept;
 
+/**
+ * @brief Move cursor.
+ * @param key Key code.
+ */
+void MoveCursor(int key) noexcept;
+
 /*! @brief Process key press. */
 void ProcessKeypress() noexcept;
 

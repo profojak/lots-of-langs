@@ -70,6 +70,48 @@ void InsertNewLine() noexcept {
     editor.cursor_x = 0;
 }
 
+void MoveCursor(int key) noexcept {
+    auto line = (static_cast<unsigned long>(editor.cursor_y) >=
+        editor.lines.size()) ? nullptr : &editor.lines[editor.cursor_y];
+    
+    switch(key) {
+        case ARROW_LEFT:
+            if(editor.cursor_x != 0)
+                editor.cursor_x--;
+            else if(editor.cursor_y > 0) {
+                editor.cursor_y--;
+                editor.cursor_x =
+                    editor.lines[editor.cursor_y].characters.size();
+            }
+            break;
+        case ARROW_RIGHT:
+            if(line && static_cast<unsigned long>(editor.cursor_x) <
+                line->characters.size())
+                editor.cursor_x++;
+            else if(line && static_cast<unsigned long>(editor.cursor_x) ==
+                line->characters.size()) {
+                editor.cursor_y++;
+                editor.cursor_x = 0;
+            }
+            break;
+        case ARROW_UP:
+            if(editor.cursor_y != 0)
+                editor.cursor_y--;
+            break;
+        case ARROW_DOWN:
+            if(static_cast<unsigned long>(editor.cursor_y) <
+                editor.lines.size())
+                editor.cursor_y++;
+            break;
+    }
+
+    line = (static_cast<unsigned long>(editor.cursor_y) >=
+        editor.lines.size()) ? nullptr : &editor.lines[editor.cursor_y];
+    int line_length = line ? line->characters.size() : 0;
+    if(editor.cursor_x > line_length)
+        editor.cursor_x = line_length;
+}
+
 void ProcessKeypress() noexcept {
     static auto quit_times = QUIT_TIMES;
     auto c = ReadKey();
@@ -89,7 +131,59 @@ void ProcessKeypress() noexcept {
             std::cout << "\x1b[2J\x1b[H";
             exit(0);
             break;
+
+        case CONTROL_KEY('s'):
+            break;
+        
+        case HOME:
+            editor.cursor_x = 0;
+            break;
+        case END:
+            if(static_cast<unsigned long>(editor.cursor_y) <
+                editor.lines.size())
+                editor.cursor_x =
+                    editor.lines[editor.cursor_y].characters.size();
+            break;
+        
+        case BACKSPACE:
+        case CONTROL_KEY('h'):
+        case DELETE:
+            break;
+        
+        case PAGE_UP:
+        case PAGE_DOWN:
+            {
+                if(c == PAGE_UP)
+                    editor.cursor_y = editor.row_offset;
+                else if(c == PAGE_DOWN) {
+                    editor.cursor_y = editor.row_offset +
+                        editor.screen_rows - 1;
+                    if(static_cast<unsigned long>(editor.cursor_y) >
+                        editor.lines.size())
+                        editor.cursor_y = editor.lines.size();
+                }
+                auto times = editor.screen_rows;
+                while(times--)
+                    MoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+            }
+            break;
+        
+        case ARROW_UP:
+        case ARROW_DOWN:
+        case ARROW_LEFT:
+        case ARROW_RIGHT:
+            MoveCursor(c);
+            break;
+        
+        case CONTROL_KEY('l'):
+        case '\x1b':
+            break;
+        
+        default:
+            break;
     }
+
+    quit_times = QUIT_TIMES;
 }
 
 } // namespace editor
