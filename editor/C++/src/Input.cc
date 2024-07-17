@@ -47,6 +47,14 @@ void Line::Update() noexcept {
     }
 }
 
+void Line::InsertChar(int at, int c) noexcept {
+    if(at < 0 || static_cast<unsigned long>(at) > characters.size())
+        at = characters.size();
+    characters.insert(at, 1, c);
+    Update();
+    editor.dirty++;
+}
+
 void Line::AppendString(const std::string& str) noexcept {
     characters.append(str);
     Update();
@@ -75,6 +83,13 @@ void DeleteLine(int at) noexcept {
         return;
     editor.lines.erase(editor.lines.begin() + at);
     editor.dirty++;
+}
+
+void InsertChar(int c) noexcept {
+    if(static_cast<unsigned long>(editor.cursor_y) == editor.lines.size())
+        InsertLine(editor.lines.size(), "");
+    editor.lines[editor.cursor_y].InsertChar(editor.cursor_x, c);
+    editor.cursor_x++;
 }
 
 void InsertNewLine() noexcept {
@@ -222,6 +237,7 @@ void ProcessKeypress() noexcept {
             break;
         
         default:
+            InsertChar(c);
             break;
     }
 

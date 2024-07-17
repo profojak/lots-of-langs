@@ -23,6 +23,13 @@ struct Line {
     void Update() noexcept;
 
     /**
+    * @brief Insert character.
+    * @param at Position.
+    * @param c Character.
+    */
+    void InsertChar(int at, int c) noexcept;
+
+    /**
     * @brief Append string.
     * @param str String.
     */
@@ -47,6 +54,12 @@ void InsertLine(int at, const std::string& str) noexcept;
  * @param at Position.
  */
 void DeleteLine(int at) noexcept;
+
+/**
+ * @brief Insert character.
+ * @param c Character.
+ */
+void InsertChar(int c) noexcept;
 
 /*! @brief Insert new line. */
 void InsertNewLine() noexcept;
