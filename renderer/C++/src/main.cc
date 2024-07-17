@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
 
     Image image(WIDTH, HEIGHT, Image::Format::RGB);
     for(auto arg = 1; arg < argc; ++arg) {
-        auto model = Model::Load("../obj/" + std::string{argv[arg]});
+        auto model = Model::Load("../.obj/" + std::string{argv[arg]});
         Shader shader(model);
         for(auto i = 0u; i < model.FacesCount(); ++i) {
             shader.LoadTriangle(i);
