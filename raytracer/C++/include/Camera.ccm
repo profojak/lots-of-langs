@@ -138,7 +138,7 @@ private:
      */
     [[nodiscard]] auto TraceRay(const Ray& ray, const Object& scene,
         const int depth) const -> Color;
-    
+
     /**
      * @brief Write pixel color to file.
      * @param color Color.
