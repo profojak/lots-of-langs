@@ -311,7 +311,7 @@ inline auto Dot(const Vector<T, N>& left, const Vector<T, N>& right) {
 }
 
 /**
- * @brief Compute cross product of two vectors.
+ * @brief Compute cross product of 3D vectors.
  * @tparam T Type of elements.
  * @tparam N Number of elements.
  * @param left First vector.
