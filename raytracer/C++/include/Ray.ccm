@@ -11,7 +11,7 @@ export using Vector3f = math::Vector<float, 3>;
 
 export namespace ray {
 
-/*! @brief Ray class. */
+/*! @brief Ray. */
 class Ray {
 private:
     /*! @brief Origin. */
@@ -66,7 +66,7 @@ public:
     }
 };
 
-/*! @brief Interval class. */
+/*! @brief Interval. */
 class Interval {
 private:
     /*! @brief Minimum distance. */

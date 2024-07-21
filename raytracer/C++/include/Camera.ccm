@@ -13,7 +13,7 @@ export using Vector3f = math::Vector<float, 3>;
 
 export namespace ray {
 
-/*! @brief Camera class. */
+/*! @brief Camera. */
 class Camera {
 public:
     /*! @brief Orientation configuration. */
