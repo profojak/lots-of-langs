@@ -21,7 +21,7 @@ typedef struct line_t {
  * @param[in] cx Cursor X coordinate.
  * @return Rendered X coordinate.
  */
-int LineCxToRx(line_t *line, int cx);
+int LineCxToRx(const line_t *line, const int cx);
 
 /**
  * @brief Update line after modification.
@@ -30,12 +30,12 @@ int LineCxToRx(line_t *line, int cx);
 void LineUpdate(line_t *line);
 
 /**
- * @brief Insert character into line.
+ * @brief Insert character to line.
  * @param[in] line Line.
  * @param[in] at Position.
  * @param[in] c Character.
  */
-void LineInsertChar(line_t *line, int at, int c);
+void LineInsertChar(line_t *line, const int at, const int c);
 
 /**
  * @brief Append string to line.
@@ -43,14 +43,14 @@ void LineInsertChar(line_t *line, int at, int c);
  * @param[in] s String.
  * @param[in] len Length.
  */
-void LineAppendString(line_t *line, char *s, size_t len);
+void LineAppendString(line_t *line, const char *s, const size_t len);
 
 /**
  * @brief Delete character from line.
  * @param[in] line Line.
  * @param[in] at Position.
  */
-void LineDeleteChar(line_t *line, int at);
+void LineDeleteChar(line_t *line, const int at);
 
 /**
  * @brief Insert line.
@@ -58,7 +58,7 @@ void LineDeleteChar(line_t *line, int at);
  * @param[in] s String.
  * @param[in] len Length.
  */
-void InsertLine(int at, char *s, size_t len);
+void InsertLine(const int at, const char *s, const size_t len);
 
 /**
  * @brief Free line.
@@ -70,13 +70,13 @@ void FreeLine(line_t *line);
  * @brief Delete line.
  * @param[in] at Position.
  */
-void DeleteLine(int at);
+void DeleteLine(const int at);
 
 /**
  * @brief Insert character.
  * @param[in] c Character.
  */
-void InsertChar(int c);
+void InsertChar(const int c);
 
 /*! @brief Insert new line. */
 void InsertNewLine(void);
@@ -89,13 +89,13 @@ void DeleteChar(void);
  * @param[in] prompt Prompt.
  * @return Text.
  */
-char *Prompt(char *prompt);
+char *Prompt(const char *prompt);
 
 /**
  * @brief Move cursor.
  * @param[in] key Key code.
  */
-void MoveCursor(int key);
+void MoveCursor(const int key);
 
 /*! @brief Process key press. */
 void ProcessKeypress(void);

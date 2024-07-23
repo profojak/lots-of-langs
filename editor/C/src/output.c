@@ -17,7 +17,7 @@
 /*! @brief Editor version. */
 #define VERSION "0.0.1"
 
-void BufferAppend(struct abuf_t *ab, const char *s, int len) {
+void BufferAppend(struct abuf_t *ab, const char *s, const int len) {
     char *new = realloc(ab->b, ab->len + len);
 
     if (new == NULL)
@@ -48,7 +48,7 @@ void Scroll(void) {
 
 void DrawLines(struct abuf_t *ab) {
     for (int y = 0; y < cfg.scr_rows; y++) {
-        int fline = y + cfg.row_offset;
+        const int fline = y + cfg.row_offset;
         if (fline >= cfg.num_lines) {
             if (cfg.num_lines == 0 && y == cfg.scr_rows / 3) {
                 char welcome[80];
@@ -87,7 +87,7 @@ void DrawStatusBar(struct abuf_t *ab) {
     int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
         cfg.filename ? cfg.filename : "[No Name]", cfg.num_lines,
         cfg.dirty ? "(modified)" : "");
-    int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d",
+    const int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d",
         cfg.c_y + 1, cfg.num_lines);
 
     if (len > cfg.scr_cols)
@@ -128,8 +128,8 @@ void RefreshScreen(void) {
     DrawMessageBar(&ab);
 
     char buf[32];
-    snprintf(buf, sizeof(buf), "\x1b[%d;%dH",
-        (cfg.c_y - cfg.row_offset) + 1, (cfg.r_x - cfg.col_offset) + 1);
+    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (cfg.c_y - cfg.row_offset) + 1,
+        (cfg.r_x - cfg.col_offset) + 1);
     BufferAppend(&ab, buf, strlen(buf));
 
     BufferAppend(&ab, "\x1b[?25h", 6);
@@ -156,7 +156,7 @@ char *LinesToString(int *buflen) {
     return buf;
 }
 
-void OpenFile(char *filename) {
+void OpenFile(const char *filename) {
     free(cfg.filename);
     cfg.filename = strdup(filename);
 

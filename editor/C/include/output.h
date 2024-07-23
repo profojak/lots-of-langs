@@ -3,7 +3,9 @@
 
 /*! @brief Append buffer. */
 struct abuf_t {
+    /*! @brief Characters. */
     char *b;
+    /*! @brief Length. */
     int len;
 };
 
@@ -13,7 +15,7 @@ struct abuf_t {
  * @param[in] s String.
  * @param[in] len Length.
  */
-void BufferAppend(struct abuf_t *ab, const char *s, int len);
+void BufferAppend(struct abuf_t *ab, const char *s, const int len);
 
 /**
  * @brief Free append buffer.
@@ -56,7 +58,7 @@ char *LinesToString(int *buflen);
  * @brief Open file.
  * @param[in] filename Filename.
  */
-void OpenFile(char *filename);
+void OpenFile(const char *filename);
 
 /*! @brief Save file. */
 void SaveFile(void);

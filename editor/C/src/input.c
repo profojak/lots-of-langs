@@ -16,7 +16,7 @@
 /*! @brief Control key. */
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-int LineCxToRx(line_t *line, int cx) {
+int LineCxToRx(const line_t *line, const int cx) {
     int r_x = 0;
     for (int j = 0; j < cx; j++) {
         if (line->chars[j] == '\t')
@@ -47,18 +47,17 @@ void LineUpdate(line_t *line) {
     line->rsize = index;
 }
 
-void LineInsertChar(line_t *line, int at, int c) {
-    if (at < 0 || at > line->size)
-        at = line->size;
+void LineInsertChar(line_t *line, const int at, const int c) {
+    int cx = at < 0 || at > line->size ? line->size : at;
     line->chars = realloc(line->chars, line->size + 2);
-    memmove(&line->chars[at + 1], &line->chars[at], line->size - at + 1);
+    memmove(&line->chars[cx + 1], &line->chars[cx], line->size - cx + 1);
     line->size++;
-    line->chars[at] = c;
+    line->chars[cx] = c;
     LineUpdate(line);
     cfg.dirty++;
 }
 
-void LineAppendString(line_t *line, char *s, size_t len) {
+void LineAppendString(line_t *line, const char *s, const size_t len) {
     line->chars = realloc(line->chars, line->size + len + 1);
     memcpy(&line->chars[line->size], s, len);
     line->size += len;
@@ -67,7 +66,7 @@ void LineAppendString(line_t *line, char *s, size_t len) {
     cfg.dirty++;
 }
 
-void LineDeleteChar(line_t *line, int at) {
+void LineDeleteChar(line_t *line, const int at) {
     if (at < 0 || at >= line->size)
         return;
     memmove(&line->chars[at], &line->chars[at + 1], line->size - at);
@@ -76,7 +75,7 @@ void LineDeleteChar(line_t *line, int at) {
     cfg.dirty++;
 }
 
-void InsertLine(int at, char *s, size_t len) {
+void InsertLine(const int at, const char *s, const size_t len) {
     if (at < 0 || at > cfg.num_lines)
         return;
     cfg.line = realloc(cfg.line, sizeof(line_t) * (cfg.num_lines + 1));
@@ -100,7 +99,7 @@ void FreeLine(line_t *line) {
     free(line->chars);
 }
 
-void DeleteLine(int at) {
+void DeleteLine(const int at) {
     if (at < 0 || at >= cfg.num_lines)
         return;
     FreeLine(&cfg.line[at]);
@@ -110,7 +109,7 @@ void DeleteLine(int at) {
     cfg.dirty++;
 }
 
-void InsertChar(int c) {
+void InsertChar(const int c) {
     if (cfg.c_y == cfg.num_lines)
         InsertLine(cfg.num_lines, "", 0);
     LineInsertChar(&cfg.line[cfg.c_y], cfg.c_x, c);
@@ -137,7 +136,7 @@ void DeleteChar(void) {
         return;
     if (cfg.c_x == 0 && cfg.c_y == 0)
         return;
-    
+
     line_t *line = &cfg.line[cfg.c_y];
     if (cfg.c_x > 0) {
         LineDeleteChar(line, cfg.c_x - 1);
@@ -150,7 +149,7 @@ void DeleteChar(void) {
     }
 }
 
-char *Prompt(char *prompt) {
+char *Prompt(const char *prompt) {
     size_t bufsize = 128;
     char *buf = malloc(bufsize);
     size_t buflen = 0;
@@ -160,7 +159,7 @@ char *Prompt(char *prompt) {
         SetStatusMessage(prompt, buf);
         RefreshScreen();
 
-        int c = ReadKey();
+        const int c = ReadKey();
         if (c == DELETE || c == CTRL_KEY('h') || c == BACKSPACE) {
             if (buflen != 0)
                 buf[--buflen] = '\0';
@@ -184,8 +183,8 @@ char *Prompt(char *prompt) {
     }
 }
 
-void MoveCursor(int key) {
-    line_t *line = (cfg.c_y >= cfg.num_lines) ? NULL : &cfg.line[cfg.c_y];
+void MoveCursor(const int key) {
+    const line_t *line = (cfg.c_y >= cfg.num_lines) ? NULL : &cfg.line[cfg.c_y];
 
     switch (key) {
         case ARROW_LEFT:
@@ -215,14 +214,14 @@ void MoveCursor(int key) {
     }
 
     line = (cfg.c_y >= cfg.num_lines) ? NULL : &cfg.line[cfg.c_y];
-    int line_len = line ? line->size : 0;
+    const int line_len = line ? line->size : 0;
     if (cfg.c_x > line_len)
         cfg.c_x = line_len;
 }
 
 void ProcessKeypress(void) {
     static int quit_times = QUIT_TIMES;
-    int c = ReadKey();
+    const int c = ReadKey();
     switch (c) {
         case '\r':
             InsertNewLine();
