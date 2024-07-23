@@ -19,7 +19,7 @@ constexpr const auto QUIT_TIMES = 3;
 /*! @brief Control key. */
 const auto CONTROL_KEY = [](const auto key) { return key & 0x1f; };
 
-auto Line::CursorXToRenderedX(int cursor_x) noexcept -> int {
+auto Line::CursorXToRenderedX(const int cursor_x) noexcept -> int {
     auto rendered_x = 0;
     for(const auto& j : std::ranges::views::iota(0, cursor_x)) {
         if(characters[j] == '\t')
@@ -47,10 +47,10 @@ void Line::Update() noexcept {
     }
 }
 
-void Line::InsertChar(int at, int c) noexcept {
-    if(at < 0 || static_cast<unsigned long>(at) > characters.size())
-        at = characters.size();
-    characters.insert(at, 1, c);
+void Line::InsertChar(const int at, const int c) noexcept {
+    auto cx = (at < 0 || static_cast<unsigned long>(at) > characters.size()) ?
+        characters.size() : at;
+    characters.insert(cx, 1, c);
     Update();
     editor.dirty++;
 }
@@ -61,7 +61,7 @@ void Line::AppendString(const std::string& str) noexcept {
     editor.dirty++;
 }
 
-void Line::DeleteChar(int at) noexcept {
+void Line::DeleteChar(const int at) noexcept {
     if(at < 0 || static_cast<unsigned long>(at) >= characters.size())
         return;
     characters.erase(at, 1);
@@ -69,7 +69,7 @@ void Line::DeleteChar(int at) noexcept {
     editor.dirty++;
 }
 
-void InsertLine(int at, const std::string& str) noexcept {
+void InsertLine(const int at, const std::string& str) noexcept {
     if(at < 0 || static_cast<unsigned long>(at) > editor.lines.size())
         return;
     editor.lines.insert(editor.lines.begin() + at, Line{});
@@ -78,14 +78,14 @@ void InsertLine(int at, const std::string& str) noexcept {
     editor.dirty++;
 }
 
-void DeleteLine(int at) noexcept {
+void DeleteLine(const int at) noexcept {
     if(at < 0 || static_cast<unsigned long>(at) >= editor.lines.size())
         return;
     editor.lines.erase(editor.lines.begin() + at);
     editor.dirty++;
 }
 
-void InsertChar(int c) noexcept {
+void InsertChar(const int c) noexcept {
     if(static_cast<unsigned long>(editor.cursor_y) == editor.lines.size())
         InsertLine(editor.lines.size(), "");
     editor.lines[editor.cursor_y].InsertChar(editor.cursor_x, c);
@@ -124,19 +124,19 @@ void DeleteChar() noexcept {
     }
 }
 
-std::string Prompt(const std::string& prompt) {
-    std::string buffer = "";
+auto Prompt(const std::string& prompt) -> std::string {
+    std::string buffer;
     while(true) {
         SetStatusMessage(prompt, buffer);
         RefreshScreen();
 
-        auto c = ReadKey();
+        const auto c = ReadKey();
         if(c == DELETE || c == CONTROL_KEY('h') || c == BACKSPACE) {
             if(!buffer.empty())
                 buffer.pop_back();
         } else if(c == '\x1b') {
             SetStatusMessage("");
-            return "";
+            return {};
         } else if(c == '\r') {
             if(!buffer.empty()) {
                 SetStatusMessage("");
@@ -147,7 +147,7 @@ std::string Prompt(const std::string& prompt) {
     }
 }
 
-void MoveCursor(int key) noexcept {
+void MoveCursor(const int key) noexcept {
     auto line = (static_cast<unsigned long>(editor.cursor_y) >=
         editor.lines.size()) ? nullptr : &editor.lines[editor.cursor_y];
     
@@ -184,14 +184,14 @@ void MoveCursor(int key) noexcept {
 
     line = (static_cast<unsigned long>(editor.cursor_y) >=
         editor.lines.size()) ? nullptr : &editor.lines[editor.cursor_y];
-    int line_length = line ? line->characters.size() : 0;
+    const int line_length = line ? line->characters.size() : 0;
     if(editor.cursor_x > line_length)
         editor.cursor_x = line_length;
 }
 
 void ProcessKeypress() noexcept {
     static auto quit_times = QUIT_TIMES;
-    auto c = ReadKey();
+    const auto c = ReadKey();
     switch(c) {
         case '\r':
             InsertNewLine();

@@ -35,7 +35,7 @@ Editor::Editor() noexcept : cursor_x{0}, cursor_y{0}, rendered_x{0},
         std::terminate();
     }
 
-    if(auto result = GetWindowSize()) {
+    if(const auto result = GetWindowSize()) {
         screen_rows = result->first - 2;
         screen_cols = result->second;
     } else {

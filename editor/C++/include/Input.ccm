@@ -6,6 +6,7 @@ export module Input;
 
 export namespace editor {
 
+/*! @brief Line. */
 struct Line {
     /*! @brief Characters. */
     std::string characters;
@@ -17,7 +18,7 @@ struct Line {
      * @param cursor_x Cursor X coordinate.
      * @return Rendered X coordinate.
      */
-    auto CursorXToRenderedX(int cursor_x) noexcept -> int;
+    auto CursorXToRenderedX(const int cursor_x) noexcept -> int;
 
     /*! @brief Update after modification. */
     void Update() noexcept;
@@ -27,7 +28,7 @@ struct Line {
     * @param at Position.
     * @param c Character.
     */
-    void InsertChar(int at, int c) noexcept;
+    void InsertChar(const int at, const int c) noexcept;
 
     /**
     * @brief Append string.
@@ -39,7 +40,7 @@ struct Line {
     * @brief Delete character.
     * @param at Position.
     */
-    void DeleteChar(int at) noexcept;
+    void DeleteChar(const int at) noexcept;
 };
 
 /**
@@ -47,19 +48,19 @@ struct Line {
  * @param at Position.
  * @param str String.
  */
-void InsertLine(int at, const std::string& str) noexcept;
+void InsertLine(const int at, const std::string& str) noexcept;
 
 /**
  * @brief Delete line.
  * @param at Position.
  */
-void DeleteLine(int at) noexcept;
+void DeleteLine(const int at) noexcept;
 
 /**
  * @brief Insert character.
  * @param c Character.
  */
-void InsertChar(int c) noexcept;
+void InsertChar(const int c) noexcept;
 
 /*! @brief Insert new line. */
 void InsertNewLine() noexcept;
@@ -72,13 +73,13 @@ void DeleteChar() noexcept;
  * @param prompt Prompt.
  * @return Text.
  */
-std::string Prompt(const std::string& prompt);
+auto Prompt(const std::string& prompt) -> std::string;
 
 /**
  * @brief Move cursor.
  * @param key Key code.
  */
-void MoveCursor(int key) noexcept;
+void MoveCursor(const int key) noexcept;
 
 /*! @brief Process key press. */
 void ProcessKeypress() noexcept;

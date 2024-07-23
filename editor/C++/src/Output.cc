@@ -34,7 +34,7 @@ void Scroll() noexcept {
 
 void DrawLines(std::string& buffer) noexcept {
     for(const auto& y : std::ranges::views::iota(0, editor.screen_rows)) {
-        auto file_line = y + editor.row_offset;
+        const auto file_line = y + editor.row_offset;
         if(static_cast<unsigned long>(file_line) >= editor.lines.size()) {
             if(editor.lines.size() == 0 && y == editor.screen_rows / 3) {
                 std::string welcome = "Text editor - version " +
@@ -103,7 +103,7 @@ void DrawMessageBar(std::string& buffer) noexcept {
     if(editor.status_message.size() >
         static_cast<unsigned long>(editor.screen_cols))
         editor.status_message.resize(editor.screen_cols);
-    auto now = std::chrono::system_clock::now();
+    const auto now = std::chrono::system_clock::now();
     if(std::chrono::system_clock::to_time_t(now) - editor.status_time < 5)
         buffer.append(editor.status_message);
 }
@@ -147,7 +147,7 @@ void OpenFile(std::string_view filename) noexcept {
     editor.dirty = 0;
 }
 
-void SaveFile(void) noexcept {
+void SaveFile() noexcept {
     if(editor.filename.empty()) {
         editor.filename = Prompt("Save as: {}");
         if(editor.filename.empty()) {
