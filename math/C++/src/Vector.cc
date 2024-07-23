@@ -22,7 +22,7 @@ template<typename T>
 concept Arithmetic = std::is_arithmetic_v<T>;
 
 /**
- * @brief Vector class.
+ * @brief Vector.
  * @tparam T Arithmetic type of elements.
  * @tparam N Positive number of elements.
  */
@@ -88,18 +88,12 @@ public:
     /*! @brief Iterator wrapper. */
     inline auto end() noexcept { return elements.end(); }
 
-    /**
-     * @brief Compute length.
-     * @return Length.
-     */
+    /*! @brief Compute length. */
     inline auto Length() const {
         return std::sqrt(Length2());
     }
 
-    /**
-     * @brief Compute squared length.
-     * @return Squared length.
-     */
+    /*! @brief Compute squared length. */
     inline auto Length2() const {
         return std::transform_reduce(std::execution::par_unseq,
             this->begin(), this->end(), T{0},
@@ -109,7 +103,6 @@ public:
     /**
      * @brief Compute dot product with another vector.
      * @param vector Vector.
-     * @return Dot product with another vector.
      */
     inline auto Dot(const Vector& vector) const {
         return std::transform_reduce(std::execution::par_unseq,
@@ -120,7 +113,6 @@ public:
     /**
      * @brief Compute cross product with another vector.
      * @param vector Vector.
-     * @return Cross product with another vector.
      */
     inline auto Cross(const Vector& vector) const noexcept {
         static_assert(N == 3);

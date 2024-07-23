@@ -103,7 +103,7 @@ static inline vec##N##T##_t Divide##N##T(vec##N##T##_t v, TYPE_MAP(T) s) {     \
 }
 
 /**
- * @brief Compute squared length.
+ * @brief Compute squared length of vector.
  * @tparam N Number of elements.
  * @tparam T Type of elements.
  * @param v Vector.
@@ -119,7 +119,7 @@ static inline TYPE_MAP(T) Length2##N##T(vec##N##T##_t v) {                     \
 }
 
 /**
- * @brief Compute length.
+ * @brief Compute length of vector.
  * @tparam N Number of elements.
  * @tparam T Type of elements.
  * @param v Vector.
