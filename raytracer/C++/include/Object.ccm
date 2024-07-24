@@ -87,7 +87,7 @@ public:
         material(std::move(material)) {}
 
     /**
-     * @brief Check if ray hits object.
+     * @brief Check if ray hits sphere.
      * @param ray Ray.
      * @param interval Interval of minimum and maximum distances.
      * @return Optional hit record.

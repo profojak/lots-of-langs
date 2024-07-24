@@ -16,7 +16,6 @@ public:
     /**
      * @brief Generate random number.
      * @tparam T Arithmetic type.
-     * @return Random number.
      */
     template<math::Arithmetic T>
     [[nodiscard]] static auto Number() {
@@ -30,7 +29,6 @@ public:
      * @tparam T Arithmetic type.
      * @param min Minimum value.
      * @param max Maximum value.
-     * @return Random number.
      */
     template<math::Arithmetic T>
     [[nodiscard]] inline static auto Number(const T min, const T max) {
@@ -41,7 +39,6 @@ public:
      * @brief Generate random vector.
      * @tparam T Arithmetic type of elements.
      * @tparam N Number of elements.
-     * @return Random vector.
      */
     template<math::Arithmetic T, std::integral auto N>
         requires (N > 0)
@@ -58,7 +55,6 @@ public:
      * @tparam N Number of elements in vector.
      * @param min Minimum value.
      * @param max Maximum value.
-     * @return Random vector within range.
      */
     template<math::Arithmetic T, auto N>
         requires std::is_integral_v<decltype(N)> && (N > 0)
@@ -73,7 +69,6 @@ public:
      * @brief Generate random vector within unit sphere.
      * @tparam T Arithmetic type of elements.
      * @tparam N Number of elements.
-     * @return Random vector.
      */
     template<math::Arithmetic T, std::integral auto N>
         requires (N > 0)
@@ -88,7 +83,6 @@ public:
      * @brief Generate random vector within unit disk.
      * @tparam T Arithmetic type of elements.
      * @tparam N Number of elements.
-     * @return Random vector.
      */
     template<math::Arithmetic T, std::integral auto N>
         requires (N == 3)

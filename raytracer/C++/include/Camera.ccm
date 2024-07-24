@@ -125,7 +125,6 @@ private:
      * @brief Get ray for given pixel.
      * @param x X coordinate of pixel.
      * @param y Y coordinate of pixel.
-     * @return Ray for given pixel.
      */
     [[nodiscard]] auto GetRay(const int x, const int y) const noexcept -> Ray;
 
