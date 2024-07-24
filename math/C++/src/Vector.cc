@@ -89,12 +89,12 @@ public:
     inline auto end() noexcept { return elements.end(); }
 
     /*! @brief Compute length. */
-    inline auto Length() const {
+    inline auto Length() const -> T {
         return std::sqrt(Length2());
     }
 
     /*! @brief Compute squared length. */
-    inline auto Length2() const {
+    inline auto Length2() const -> T {
         return std::transform_reduce(std::execution::par_unseq,
             this->begin(), this->end(), T{0},
             std::plus<>{}, [](const auto value) { return value * value; });
@@ -104,7 +104,7 @@ public:
      * @brief Compute dot product with another vector.
      * @param vector Vector.
      */
-    inline auto Dot(const Vector& vector) const {
+    inline auto Dot(const Vector& vector) const -> T {
         return std::transform_reduce(std::execution::par_unseq,
             this->begin(), this->end(), vector.begin(), T{0},
             std::plus<>{}, std::multiplies<>{});
@@ -114,7 +114,7 @@ public:
      * @brief Compute cross product with another vector.
      * @param vector Vector.
      */
-    inline auto Cross(const Vector& vector) const noexcept {
+    inline auto Cross(const Vector& vector) const noexcept -> Vector {
         static_assert(N == 3);
         return Vector(elements[1] * vector[2] - elements[2] * vector[1],
                       elements[2] * vector[0] - elements[0] * vector[2],
@@ -125,14 +125,14 @@ public:
      * @brief Normalize.
      * @return Normalized vector.
      */
-    inline auto Normalize() const { return *this / Length(); }
+    inline auto Normalize() const -> Vector { return *this / Length(); }
 
     /**
      * @brief Reflect.
      * @param normal Normal vector.
      * @return Reflected vector.
      */
-    inline auto Reflect(const Vector& normal) const {
+    inline auto Reflect(const Vector& normal) const -> Vector {
         static_assert(N == 3);
         return *this - T{2} * Dot(normal) * normal;
     }
@@ -143,7 +143,7 @@ public:
      * @param ratio Refraction ratio.
      * @return Refracted vector.
      */
-    auto Refract(const Vector& normal, const T ratio) const {
+    inline auto Refract(const Vector& normal, const T ratio) const -> Vector {
         static_assert(N == 3);
         const auto cos_theta = std::min((-*this).Dot(normal), T{1});
         const auto perpendicular = ratio * (*this + cos_theta * normal);
@@ -275,7 +275,9 @@ public:
  */
 template<Arithmetic T, std::integral auto N>
     requires (N > 0)
-inline auto Length(const Vector<T, N>& vector) { vector.Length(); }
+inline auto Length(const Vector<T, N>& vector) -> T {
+    vector.Length();
+}
 
 /**
  * @brief Compute squared length of vector.
@@ -286,7 +288,9 @@ inline auto Length(const Vector<T, N>& vector) { vector.Length(); }
  */
 template<Arithmetic T, std::integral auto N>
     requires (N > 0)
-inline auto Length2(const Vector<T, N>& vector) { return vector.Length2(); }
+inline auto Length2(const Vector<T, N>& vector) -> T {
+    return vector.Length2();
+}
 
 /**
  * @brief Compute dot product of vectors.
@@ -298,7 +302,7 @@ inline auto Length2(const Vector<T, N>& vector) { return vector.Length2(); }
  */
 template<Arithmetic T, std::integral auto N>
     requires (N > 0)
-inline auto Dot(const Vector<T, N>& left, const Vector<T, N>& right) {
+inline auto Dot(const Vector<T, N>& left, const Vector<T, N>& right) -> T {
     return left.Dot(right);
 }
 
@@ -312,7 +316,8 @@ inline auto Dot(const Vector<T, N>& left, const Vector<T, N>& right) {
  */
 template<Arithmetic T, std::integral auto N>
     requires (N == 3)
-inline auto Cross(const Vector<T, N>& left, const Vector<T, N>& right) {
+inline auto Cross(const Vector<T, N>& left, const Vector<T, N>& right)
+    -> Vector<T, N> {
     return left.Cross(right);
 }
 
@@ -325,7 +330,7 @@ inline auto Cross(const Vector<T, N>& left, const Vector<T, N>& right) {
  */
 template<Arithmetic T, std::integral auto N>
     requires (N > 0)
-inline auto Normalize(const Vector<T, N>& vector) {
+inline auto Normalize(const Vector<T, N>& vector) -> Vector<T, N> {
     return vector.Normalize();
 }
 
@@ -339,7 +344,8 @@ inline auto Normalize(const Vector<T, N>& vector) {
  */
 template<Arithmetic T, std::integral auto N>
     requires (N == 3)
-inline auto Reflect(const Vector<T, N>& vector, const Vector<T, N>& normal) {
+inline auto Reflect(const Vector<T, N>& vector, const Vector<T, N>& normal)
+    -> Vector<T, N> {
     return vector.Reflect(normal);
 }
 
@@ -354,8 +360,8 @@ inline auto Reflect(const Vector<T, N>& vector, const Vector<T, N>& normal) {
  */
 template<Arithmetic T, std::integral auto N>
     requires (N == 3)
-auto Refract(const Vector<T, N>& vector, const Vector<T, N>& normal,
-    const T ratio) {
+inline auto Refract(const Vector<T, N>& vector, const Vector<T, N>& normal,
+    const T ratio) -> Vector<T, N> {
     return vector.Refract(normal, ratio);
 }
 
