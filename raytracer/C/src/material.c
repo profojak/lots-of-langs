@@ -32,12 +32,11 @@ int MetalScatter(const ray_t *ray, const hit_t *hit, color_t *attenuation,
         scattered->dir = dir;
         return 1;
     }
-
     return 0;
 }
 
 /**
- * @brief Calculate dielectric reflectance.
+ * @brief Calculate material reflectance.
  * @param cos_theta Cosine of angle.
  * @param index Refraction index.
  * @return Reflectance.

@@ -80,7 +80,6 @@ typedef struct {
  * @param[in] image Output image configuration.
  * @param[in] lens Lens configuration.
  * @param[in] sampling Sampling configuration.
- * @return Camera.
  */
 camera_t CameraCreate(camera_orientation_t orientation, camera_image_t image,
     camera_lens_t lens, camera_sampling_t sampling);
@@ -103,7 +102,6 @@ void CameraRender(const objects_t *scene, camera_t *camera);
  * @param[in] x X coordinate of pixel.
  * @param[in] y Y coordinate of pixel.
  * @param[in] camera Camera.
- * @return Ray for given pixel.
  */
 ray_t CameraGetRay(int i, int j, camera_t *camera);
 

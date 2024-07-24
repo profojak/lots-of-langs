@@ -18,7 +18,6 @@ int CheckHit(const ray_t *ray, const interval_t interval,
             hit->front_face = new_hit.front_face;
         }
     }
-
     return is_hit;
 }
 
@@ -34,7 +33,6 @@ int CheckHitSphere(const ray_t *ray, const interval_t interval,
         return 0;
     const float square_root = sqrtf(discriminant);
     float dist = (b - square_root) / a;
-
     if (!IntervalSurrounds(dist, interval)) {
         dist = (b + square_root) / a;
         if (!IntervalSurrounds(dist, interval))

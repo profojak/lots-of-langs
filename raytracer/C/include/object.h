@@ -11,7 +11,7 @@ struct sphere_t;
 typedef struct {
     /*! @brief Array of spheres. */
     struct sphere_t *spheres;
-    /*! @brief Number of objects. */
+    /*! @brief Number of spheres. */
     int size;
 } objects_t;
 
