@@ -126,7 +126,7 @@ public:
      * @param value Value to clamp.
      * @return Clamped value.
      */
-    inline auto Clamp(const float value) const noexcept -> bool {
+    inline auto Clamp(const float value) const noexcept -> float {
         if(value < min)
             return min;
         if(value > max)
