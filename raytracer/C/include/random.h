@@ -15,7 +15,7 @@ static inline float RandomFloat(void) {
  * @param min Minimum value.
  * @param max Maximum value.
  */
-static inline float RandomFloatRange(float min, float max) {
+static inline float RandomFloatRange(const float min, const float max) {
     return min + (max - min) * RandomFloat();
 }
 
@@ -29,7 +29,7 @@ static inline vec3f_t RandomVector(void) {
  * @param min Minimum value.
  * @param max Maximum value.
  */
-static inline vec3f_t RandomVectorRange(float min, float max) {
+static inline vec3f_t RandomVectorRange(const float min, const float max) {
     return (vec3f_t) { RandomFloatRange(min, max), RandomFloatRange(min, max),
         RandomFloatRange(min, max) };
 }

@@ -41,7 +41,7 @@ int MetalScatter(const ray_t *ray, const hit_t *hit, color_t *attenuation,
  * @param index Refraction index.
  * @return Reflectance.
  */
-float DielectricReflectance(float cos_theta, float index) {
+float DielectricReflectance(const float cos_theta, const float index) {
     float r0 = (1 - index) / (1 + index);
     r0 *= r0;
     return r0 + (1 - r0) * pow(1 - cos_theta, 5);

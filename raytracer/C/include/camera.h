@@ -81,8 +81,9 @@ typedef struct {
  * @param[in] lens Lens configuration.
  * @param[in] sampling Sampling configuration.
  */
-camera_t CameraCreate(camera_orientation_t orientation, camera_image_t image,
-    camera_lens_t lens, camera_sampling_t sampling);
+camera_t CameraCreate(const camera_orientation_t orientation,
+    const camera_image_t image, const camera_lens_t lens,
+    const camera_sampling_t sampling);
 
 /**
  * @brief Destroy camera.
@@ -95,7 +96,7 @@ void CameraDestroy(camera_t *camera);
  * @param[in] scene Scene.
  * @param[in] camera Camera.
  */
-void CameraRender(const objects_t *scene, camera_t *camera);
+void CameraRender(const objects_t *scene, const camera_t *camera);
 
 /**
  * @brief Get ray for given pixel.
@@ -103,22 +104,23 @@ void CameraRender(const objects_t *scene, camera_t *camera);
  * @param[in] y Y coordinate of pixel.
  * @param[in] camera Camera.
  */
-ray_t CameraGetRay(int i, int j, camera_t *camera);
+ray_t CameraGetRay(const int i, const int j, const camera_t *camera);
 
 /**
  * @brief Trace ray.
- * @param ray Ray.
- * @param scene Scene.
- * @param depth Current recursion depth.
+ * @param[in] ray Ray.
+ * @param[in] scene Scene.
+ * @param[in] depth Current recursion depth.
  * @return Color of pixel.
  */
-color_t CameraTraceRay(ray_t *ray, const objects_t *objects, int depth);
+color_t CameraTraceRay(const ray_t *ray, const objects_t *objects,
+    const int depth);
 
 /**
  * @brief Write pixel color to file.
  * @param[in] color Color.
  * @param[in] camera Camera.
  */
-void CameraWriteColor(color_t color, camera_t *camera);
+void CameraWriteColor(const color_t color, const camera_t *camera);
 
 #endif // _CAMERA_H_

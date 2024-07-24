@@ -22,7 +22,7 @@ int CheckHit(const ray_t *ray, const interval_t interval,
 }
 
 int CheckHitSphere(const ray_t *ray, const interval_t interval,
-    sphere_t *sphere, hit_t *hit) {
+    const sphere_t *sphere, hit_t *hit) {
     const vec3f_t oc = Subtract3f(sphere->center, ray->orig);
     const float a = Length23f(ray->dir);
     const float b = DotProduct3f(oc, ray->dir);

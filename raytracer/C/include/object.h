@@ -45,6 +45,6 @@ int CheckHit(const ray_t *ray, const interval_t interval,
  * @return Zero on miss, non-zero on hit.
  */
 int CheckHitSphere(const ray_t *ray, const interval_t interval,
-    sphere_t *sphere, hit_t *hit);
+    const sphere_t *sphere, hit_t *hit);
 
 #endif // _OBJECT_H_

@@ -17,7 +17,7 @@ typedef struct {
  * @param[in] ray Ray.
  * @return Point at specified distance along ray.
  */
-static inline vec3f_t RayPointAt(float t, const ray_t *ray) {
+static inline vec3f_t RayPointAt(const float t, const ray_t *ray) {
     return Add3f(ray->orig, Multiply3f(ray->dir, t));
 }
 
@@ -35,7 +35,7 @@ typedef struct {
  * @param[in] interval Interval.
  * @return Non-zero if interval contains value, zero otherwise.
  */
-inline int IntervalContains(float value, const interval_t interval) {
+inline int IntervalContains(const float value, const interval_t interval) {
     return value >= interval.min && value <= interval.max;
 }
 
@@ -45,7 +45,7 @@ inline int IntervalContains(float value, const interval_t interval) {
  * @param[in] interval Interval.
  * @return Non-zero if interval surrounds value, zero otherwise.
  */
-inline int IntervalSurrounds(float value, const interval_t interval) {
+inline int IntervalSurrounds(const float value, const interval_t interval) {
     return value > interval.min && value < interval.max;
 }
 
@@ -55,7 +55,7 @@ inline int IntervalSurrounds(float value, const interval_t interval) {
  * @param[in] interval Interval.
  * @return Clamped value.
  */
-inline float IntervalClamp(float value, const interval_t interval) {
+inline float IntervalClamp(const float value, const interval_t interval) {
     return value < interval.min ? interval.min :
         (value > interval.max ? interval.max : value);
 }

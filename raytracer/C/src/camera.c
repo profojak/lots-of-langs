@@ -8,8 +8,9 @@
 
 #define M_PI 3.14159265358979323846
 
-camera_t CameraCreate(camera_orientation_t orientation, camera_image_t image,
-    camera_lens_t lens, camera_sampling_t sampling) {
+camera_t CameraCreate(const camera_orientation_t orientation,
+    const camera_image_t image, const camera_lens_t lens,
+    const camera_sampling_t sampling) {
     camera_t camera;
     camera.orientation = orientation;
     camera.image = image;
@@ -62,7 +63,7 @@ typedef struct {
     int y_start;
     int y_end;
     color_t *colors;
-    camera_t *camera;
+    const camera_t *camera;
     const objects_t *scene;
 } render_segment_args_t;
 
@@ -83,12 +84,12 @@ void *RenderSegment(void *arg) {
     pthread_exit(NULL);
 }
 
-void CameraRender(const objects_t *scene, camera_t *camera) {
+void CameraRender(const objects_t *scene, const camera_t *camera) {
     const long num_procs = sysconf(_SC_NPROCESSORS_ONLN);
     const int segment = camera->img_h / num_procs;
 
     pthread_t threads[num_procs];
-    color_t colors[num_procs][camera->image.img_w * segment];
+    color_t colors[num_procs * camera->image.img_w * segment];
     render_segment_args_t args[num_procs];
 
     printf("Ray tracing on %ld threads...\n", num_procs);
@@ -96,7 +97,7 @@ void CameraRender(const objects_t *scene, camera_t *camera) {
     for (int i = 0; i < num_procs; i++) {
         args[i].y_start = i * segment;
         args[i].y_end = (i + 1) * segment;
-        args[i].colors = colors[i];
+        args[i].colors = &colors[i * camera->image.img_w * segment];
         args[i].camera = camera;
         args[i].scene = scene;
         if (i == num_procs - 1)
@@ -108,13 +109,13 @@ void CameraRender(const objects_t *scene, camera_t *camera) {
 
     fprintf(camera->file, "P3\n%d %d\n255\n", camera->image.img_w,
         camera->img_h);
-    for (int i = 0; i < num_procs; i++)
-        for (int j = 0; j < camera->image.img_w * segment; j++)
-            CameraWriteColor(colors[i][j], camera);
+    for (int i = 0; i < camera->img_h; i++)
+        for (int j = 0; j < camera->image.img_w; j++)
+            CameraWriteColor(colors[i * camera->image.img_w + j], camera);
     printf("Done!\n");
 }
 
-ray_t CameraGetRay(int x, int y, camera_t *camera) {
+ray_t CameraGetRay(const int x, const int y, const camera_t *camera) {
     float offset_x = RandomFloat() - 0.5;
     float offset_y = RandomFloat() - 0.5;
     vec3f_t pixel_sample = Add3f(camera->px_up_left,
@@ -128,7 +129,8 @@ ray_t CameraGetRay(int x, int y, camera_t *camera) {
     return (ray_t){ orig, Subtract3f(pixel_sample, orig) };
 }
 
-color_t CameraTraceRay(ray_t *ray, const objects_t *scene, int depth) {
+color_t CameraTraceRay(const ray_t *ray, const objects_t *scene,
+    const int depth) {
     if (depth <= 0)
         return (color_t){ 0, 0, 0 };
 
@@ -150,7 +152,7 @@ color_t CameraTraceRay(ray_t *ray, const objects_t *scene, int depth) {
         Multiply3f((color_t){ 0.5, 0.7, 1 }, t));
 }
 
-void CameraWriteColor(color_t color, camera_t *camera) {
+void CameraWriteColor(const color_t color, const camera_t *camera) {
     interval_t intensity = { 0, 1 - 0.0001 };
     float r = color.data[0];
     float g = color.data[1];

@@ -23,7 +23,7 @@ typedef struct {
     /*! @brief Normal at point of intersection. */
     vec3f_t normal;
     /*! @brief Material of intersected object. */
-    struct material_t *mat;
+    const struct material_t *mat;
     /*! @brief Distance from ray origin. */
     float dist;
     /*! @brief Whether ray hit front face. */
