@@ -44,10 +44,10 @@ public:
     inline Ray& operator=(Ray&&) noexcept = default;
 
     /*! @brief Get origin. */
-    inline auto Origin() const noexcept { return origin; }
+    inline auto Origin() const noexcept -> Vector3f { return origin; }
 
     /*! @brief Get direction. */
-    inline auto Direction() const noexcept { return direction; }
+    inline auto Direction() const noexcept -> Vector3f { return direction; }
 
     /**
      * @brief Get point at given distance along ray.
@@ -56,7 +56,7 @@ public:
      * @return Point at specified distance along ray.
      */
     template<math::Arithmetic U>
-    inline auto PointAt(const U distance) const noexcept {
+    inline auto PointAt(const U distance) const noexcept -> Vector3f {
         return origin + direction * distance;
     }
 
@@ -93,13 +93,13 @@ public:
         max{max} {}
 
     /*! @brief Get minimum value. */
-    inline auto Min() const noexcept { return min; }
+    inline auto Min() const noexcept -> float { return min; }
 
     /*! @brief Get maximum value. */
-    inline auto Max() const noexcept { return max; }
+    inline auto Max() const noexcept -> float { return max; }
 
     /*! @brief Get size of interval. */
-    inline auto Size() const noexcept {
+    inline auto Size() const noexcept -> float {
         return max - min;
     }
 
@@ -108,7 +108,7 @@ public:
      * @param value Value to check.
      * @return True if interval contains value, false otherwise.
      */
-    inline auto Contains(const float value) const noexcept {
+    inline auto Contains(const float value) const noexcept -> bool {
         return min <= value && value <= max;
     }
 
@@ -117,7 +117,7 @@ public:
      * @param value Value to check.
      * @return True if interval surrounds value, false otherwise.
      */
-    inline auto Surrounds(const float value) const noexcept {
+    inline auto Surrounds(const float value) const noexcept -> bool {
         return min < value && value < max;
     }
 
@@ -126,7 +126,7 @@ public:
      * @param value Value to clamp.
      * @return Clamped value.
      */
-    inline auto Clamp(const float value) const noexcept {
+    inline auto Clamp(const float value) const noexcept -> bool {
         if(value < min)
             return min;
         if(value > max)
