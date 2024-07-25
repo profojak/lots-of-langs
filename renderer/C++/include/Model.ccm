@@ -12,6 +12,7 @@ export module Model;
 export using Vector2f = math::Vector<float, 2>;
 export using Vector3f = math::Vector<float, 3>;
 
+/*! @brief Model error. */
 class ModelError : public std::logic_error {
 public:
     /*! @brief Constructor. */

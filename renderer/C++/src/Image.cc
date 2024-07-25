@@ -52,8 +52,7 @@ void Image::ReadTgaFile(const std::string& filename) {
     in.close();
 }
 
-void Image::WriteTgaFile(const std::string& filename, const bool rle)
-    const {
+void Image::WriteTgaFile(const std::string& filename, const bool rle) const {
     const std::array<uint8_t, 4> developer_area_ref{};
     const std::array<uint8_t, 4> extension_area_ref{};
     const auto footer = "TRUEVISION-XFILE.\0";

@@ -6,11 +6,13 @@ import Shader;
 
 using namespace render;
 
+/*! @brief Image width. */
 constexpr auto WIDTH = 640;
+/*! @brief Image height. */
 constexpr auto HEIGHT = 640;
 
 /*! @brief Main function. */
-int main(int argc, char* argv[]) {
+int main(const int argc, const char* argv[]) {
     if(argc < 2) {
         std::cerr << "Usage: " << argv[0] << " model.obj" << std::endl;
         std::exit(1);
