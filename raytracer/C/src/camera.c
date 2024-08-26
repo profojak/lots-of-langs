@@ -1,5 +1,4 @@
 #include <math.h>
-#include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -59,53 +58,23 @@ void CameraDestroy(camera_t *camera) {
     fclose(camera->file);
 }
 
-typedef struct {
-    int y_start;
-    int y_end;
-    color_t *colors;
-    const camera_t *camera;
-    const objects_t *scene;
-} render_segment_args_t;
+void CameraRender(const objects_t *scene, const camera_t *camera) {
+    color_t colors[camera->image.img_w * camera->img_h];
 
-void *RenderSegment(void *arg) {
-    render_segment_args_t *args = (render_segment_args_t *)arg;
-    for (int y = args->y_start; y < args->y_end; y++) {
-        for (int x = 0; x < args->camera->image.img_w; x++) {
+    printf("Ray tracing on 1 thread...\n");
+
+    for (int y = 0; y < camera->img_h; y++) {
+        for (int x = 0; x < camera->image.img_w; x++) {
             color_t color = { 0 };
-            for (int s = 0; s < args->camera->sampling.samples; s++) {
-                ray_t ray = CameraGetRay(x, y, args->camera);
-                color = Add3f(color, CameraTraceRay(&ray, args->scene,
-                    args->camera->sampling.max_depth));
+            for (int s = 0; s < camera->sampling.samples; s++) {
+                ray_t ray = CameraGetRay(x, y, camera);
+                color = Add3f(color, CameraTraceRay(&ray, scene,
+                    camera->sampling.max_depth));
             }
-            args->colors[(y - args->y_start) * args->camera->image.img_w + x] =
-                Multiply3f(color, args->camera->px_sample_w);
+            colors[y * camera->image.img_w + x] =
+                Multiply3f(color, camera->px_sample_w);
         }
     }
-    pthread_exit(NULL);
-}
-
-void CameraRender(const objects_t *scene, const camera_t *camera) {
-    const long num_procs = sysconf(_SC_NPROCESSORS_ONLN);
-    const int segment = camera->img_h / num_procs;
-
-    pthread_t threads[num_procs];
-    color_t colors[num_procs * camera->image.img_w * segment];
-    render_segment_args_t args[num_procs];
-
-    printf("Ray tracing on %ld threads...\n", num_procs);
-
-    for (int i = 0; i < num_procs; i++) {
-        args[i].y_start = i * segment;
-        args[i].y_end = (i + 1) * segment;
-        args[i].colors = &colors[i * camera->image.img_w * segment];
-        args[i].camera = camera;
-        args[i].scene = scene;
-        if (i == num_procs - 1)
-            args[i].y_end = camera->img_h;
-        pthread_create(&threads[i], NULL, RenderSegment, &args[i]);
-    }
-    for (int i = 0; i < num_procs; i++)
-        pthread_join(threads[i], NULL);
 
     fprintf(camera->file, "P3\n%d %d\n255\n", camera->image.img_w,
         camera->img_h);
