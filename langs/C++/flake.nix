@@ -44,6 +44,8 @@
           version = "0.0.0";
           src = ./.;
           inherit configurePhase buildPhase installPhase;
+          buildInputs = [ pkgs.raylib ];
+          NIX_LDFLAGS = "-lraylib";
           meta.mainProgram = "pbf";
         };
 
