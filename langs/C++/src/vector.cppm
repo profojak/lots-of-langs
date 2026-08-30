@@ -8,6 +8,7 @@ module;
 #include <cstdint>
 #include <expected>
 #include <functional>
+#include <numeric>
 #include <utility>
 
 export module vector;
@@ -53,6 +54,16 @@ public:
     return *this;
   }
 
+  constexpr Vector &operator*=(T scalar) noexcept {
+    std::ranges::for_each(data, [scalar](T &value) { value *= scalar; });
+    return *this;
+  }
+
+  constexpr Vector &operator/=(T scalar) noexcept {
+    std::ranges::for_each(data, [scalar](T &value) { value /= scalar; });
+    return *this;
+  }
+
   [[nodiscard]] constexpr Vector operator-() const noexcept {
     Vector res;
     std::ranges::transform(data, res.data.begin(), std::negate<>{});
@@ -69,6 +80,39 @@ public:
                                                   const Vector &right) {
     left -= right;
     return left;
+  }
+
+  [[nodiscard]] friend constexpr Vector operator*(Vector left,
+                                                  T right) noexcept {
+    left *= right;
+    return left;
+  }
+
+  [[nodiscard]] friend constexpr Vector operator*(T left,
+                                                  Vector right) noexcept {
+    right *= left;
+    return right;
+  }
+
+  [[nodiscard]] friend constexpr Vector operator/(Vector left,
+                                                  T right) noexcept {
+    left /= right;
+    return left;
+  }
+
+  [[nodiscard]] friend constexpr auto Dot(const Vector &left,
+                                          const Vector &right) noexcept {
+    using Promoted = std::conditional_t<std::floating_point<T>, T, double>;
+    return std::transform_reduce(left.data.begin(), left.data.end(),
+                                 right.data.begin(), Promoted{}, std::plus<>{},
+                                 std::multiplies<>{});
+  }
+
+  [[nodiscard]] friend constexpr auto Cross(const Vector &left,
+                                            const Vector &right) noexcept {
+    return Vector{left[1] * right[2] - left[2] * right[1],
+                  left[2] * right[0] - left[0] * right[2],
+                  left[0] * right[1] - left[1] * right[0]};
   }
 
   [[nodiscard]] auto Length() const noexcept {
