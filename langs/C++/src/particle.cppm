@@ -53,13 +53,13 @@ public:
     std::apply([total](auto &...vecs) { (vecs.resize(total), ...); }, data);
     auto &positions = std::get<static_cast<std::size_t>(Field::Position)>(data);
 
-    const Vec3f size = {box.size[0] / static_cast<float>(box.counts[0]),
-                        box.size[1] / static_cast<float>(box.counts[1]),
-                        box.size[2] / static_cast<float>(box.counts[2])};
+    const Vec3f size = {box.size[0] * 2.0f / static_cast<float>(box.counts[0]),
+                        box.size[1] * 2.0f / static_cast<float>(box.counts[1]),
+                        box.size[2] * 2.0f / static_cast<float>(box.counts[2])};
 
-    const Vec3f start = {box.origin[0] - box.size[0] * 0.5f + size[0] * 0.5f,
-                         box.origin[1] - box.size[1] * 0.5f + size[1] * 0.5f,
-                         box.origin[2] - box.size[2] * 0.5f + size[2] * 0.5f};
+    const Vec3f start = {box.origin[0] - box.size[0] + size[0] * 0.5f,
+                         box.origin[1] - box.size[1] + size[1] * 0.5f,
+                         box.origin[2] - box.size[2] + size[2] * 0.5f};
 
     std::size_t idx = 0;
     for (std::size_t i : std::views::iota(0uz, box.counts[0])) {
