@@ -15,13 +15,15 @@ namespace pbf {
 export struct Particle {
   Vec3f position;
   Vec3f predicted_position;
+  Vec3f updated_position;
   Vec3f velocity;
-  Vec3f density_delta;
+  Vec3f updated_velocity;
+  Vec3f vorticity;
   float lambda;
 
   [[nodiscard]] constexpr auto Fields(this Particle &self) noexcept {
-    auto &[p, pp, v, dd, l] = self;
-    return std::tie(p, pp, v, dd, l);
+    auto &[p, pp, up, v, uv, vr, l] = self;
+    return std::tie(p, pp, up, v, uv, vr, l);
   }
 };
 
@@ -39,9 +41,11 @@ public:
   enum class Field {
     Position = 0,
     PredictedPosition = 1,
-    Velocity = 2,
-    DensityDelta = 3,
-    Lambda = 4
+    UpdatedPosition = 2,
+    Velocity = 3,
+    UpdatedVelocity = 4,
+    Vorticity = 5,
+    Lambda = 6
   };
   static_assert(static_cast<std::size_t>(Field::Lambda) + 1 == field_count);
 
