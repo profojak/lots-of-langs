@@ -43,6 +43,13 @@ public:
     data.fill(static_cast<T>(scalar));
   }
 
+  template <arithmetic U>
+    requires std::convertible_to<U, T>
+  explicit constexpr Vector(const Vector<U, N> &other) {
+    for (std::size_t i = 0; i < N; ++i)
+      data[i] = static_cast<T>(other[i]);
+  }
+
   template <typename Self>
   constexpr decltype(auto) operator[](this Self &&self, const std::size_t index) {
     return std::forward<Self>(self).data[index];
@@ -70,6 +77,11 @@ public:
 
   constexpr Vector &operator/=(T scalar) noexcept {
     std::ranges::for_each(data, [scalar](T &value) { value /= scalar; });
+    return *this;
+  }
+
+  constexpr Vector &operator/=(const Vector &other) noexcept {
+    std::ranges::transform(data, other.data, data.begin(), std::divides<>{});
     return *this;
   }
 
@@ -105,6 +117,11 @@ public:
   }
 
   [[nodiscard]] friend constexpr Vector operator/(Vector left, T right) noexcept {
+    left /= right;
+    return left;
+  }
+
+  [[nodiscard]] friend constexpr Vector operator/(Vector left, const Vector &right) noexcept {
     left /= right;
     return left;
   }
