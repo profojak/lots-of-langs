@@ -1,11 +1,13 @@
 module;
 
+#include <algorithm>
 #include <condition_variable>
 #include <cstddef>
 #include <functional>
-#include <future>
+#include <latch>
 #include <mutex>
 #include <queue>
+#include <stop_token>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -16,20 +18,18 @@ export module thread;
 namespace pbf {
 
 export class Threads {
-  std::vector<std::jthread> workers;
-  std::queue<std::function<void()>> tasks;
-  std::condition_variable task_available;
   mutable std::mutex mutex;
-  bool stopping = false;
+  std::condition_variable_any task_available;
+  std::queue<std::function<void()>> tasks;
+  std::vector<std::jthread> workers;
 
-  void WorkerLoop() {
+  void WorkerLoop(std::stop_token stop) {
     while (true) {
       std::function<void()> task;
       {
         std::unique_lock lock(mutex);
-        task_available.wait(lock,
-                            [this] { return stopping || !tasks.empty(); });
-        if (stopping && tasks.empty())
+        task_available.wait(lock, stop, [this] { return !tasks.empty(); });
+        if (tasks.empty())
           return;
         task = std::move(tasks.front());
         tasks.pop();
@@ -38,13 +38,23 @@ export class Threads {
     }
   }
 
+  template <typename F> void Enqueue(F &&task) {
+    {
+      std::lock_guard lock(mutex);
+      tasks.emplace(std::forward<F>(task));
+    }
+    task_available.notify_one();
+  }
+
 public:
-  explicit Threads(auto thread_count = std::thread::hardware_concurrency()) {
+  Threads() : Threads(std::thread::hardware_concurrency()) {}
+
+  explicit Threads(std::size_t thread_count) {
     if (thread_count == 0)
       thread_count = 1;
     workers.reserve(thread_count);
     for (std::size_t i = 0; i < thread_count; ++i)
-      workers.emplace_back([this] { WorkerLoop(); });
+      workers.emplace_back([this](std::stop_token stop) { WorkerLoop(stop); });
   }
 
   Threads(const Threads &) = delete;
@@ -52,51 +62,30 @@ public:
   Threads(Threads &&) = delete;
   Threads &operator=(Threads &&) = delete;
 
-  ~Threads() {
-    {
-      std::lock_guard lock(mutex);
-      stopping = true;
-    }
-    task_available.notify_all();
-  }
-
   template <typename F>
-    requires std::invocable<F &>
-  [[nodiscard]] std::future<std::invoke_result_t<F &>> Submit(F &&function) {
-    using R = std::invoke_result_t<F &>;
-    auto task =
-        std::make_shared<std::packaged_task<R()>>(std::forward<F>(function));
-    std::future<R> future = task->get_future();
-    {
-      std::lock_guard lock(mutex);
-      tasks.emplace([task] { (*task)(); });
-    }
-    task_available.notify_one();
-    return future;
-  }
-
-  template <typename F>
-    requires std::invocable<F &, std::size_t, std::size_t>
-  void ParallelFor(std::size_t count, F &&function) {
-    if (workers.size() <= 1) {
-      function(0, count);
+    requires std::is_nothrow_invocable_v<F &, std::size_t, std::size_t>
+  void ParallelFor(std::size_t count, F &&task) {
+    if (workers.size() <= 1 || count == 0) {
+      if (count > 0)
+        task(0, count);
       return;
     }
 
-    std::size_t chunk = count / workers.size();
-    if (chunk == 0)
-      chunk = 1;
+    const std::size_t chunk = std::max<std::size_t>(1, count / workers.size());
+    const std::size_t chunks = (count + chunk - 1) / chunk;
 
-    std::vector<std::future<void>> futures;
-    futures.reserve(workers.size());
+    std::latch done{static_cast<std::ptrdiff_t>(chunks)};
+
     std::size_t begin = 0;
-    for (; begin + chunk < count; begin += chunk)
-      futures.push_back(Submit(
-          [&function, begin, end = begin + chunk] { function(begin, end); }));
-    function(begin, count);
+    for (std::size_t c = 0; c + 1 < chunks; ++c, begin += chunk)
+      Enqueue([&, begin, end = begin + chunk] {
+        task(begin, end);
+        done.count_down();
+      });
 
-    for (auto &future : futures)
-      future.get();
+    task(begin, count);
+    done.count_down();
+    done.wait();
   }
 };
 
