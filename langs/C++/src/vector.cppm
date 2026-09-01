@@ -129,33 +129,37 @@ public:
 
   [[nodiscard]] constexpr auto LengthSquared() const noexcept { return Dot(*this, *this); }
 
-  [[nodiscard]] std::expected<NormalizedVector<T, N>, Error> Normalize() const;
+  [[nodiscard]] auto Length() const noexcept { return std::sqrt(LengthSquared()); }
+
+  [[nodiscard]] auto Normalize() const -> std::expected<NormalizedVector<T, N>, Error>
+    requires std::floating_point<T>;
 };
 
 export template <arithmetic T, std::size_t N>
   requires(N > 0)
 class NormalizedVector : public Vector<T, N> {
+  static_assert(std::floating_point<T>, "`NormalizedVector` requires floating-point `T`!");
+
   friend class Vector<T, N>;
 
   explicit constexpr NormalizedVector(Vector<T, N> &&other) noexcept
       : Vector<T, N>(std::move(other)) {}
 
 public:
-  constexpr NormalizedVector() {
-    this->data.fill(T{0});
-    this->data[0] = T{1};
-  }
+  NormalizedVector(const NormalizedVector &) = default;
+  NormalizedVector(NormalizedVector &&) = default;
+  NormalizedVector &operator=(const NormalizedVector &) = default;
+  NormalizedVector &operator=(NormalizedVector &&) = default;
 
-  explicit NormalizedVector(const Vector<T, N> &other)
-      : NormalizedVector(other.Normalize().value_or(NormalizedVector{})) {}
-
-  [[nodiscard]] constexpr const T &
-  operator[](const std::size_t index) const noexcept {
+  [[nodiscard]] constexpr const T &operator[](const std::size_t index) const noexcept {
     return Vector<T, N>::operator[](index);
   }
 
   constexpr Vector<T, N> &operator+=(const Vector<T, N> &) = delete;
   constexpr Vector<T, N> &operator-=(const Vector<T, N> &) = delete;
+  constexpr Vector<T, N> &operator*=(T) = delete;
+  constexpr Vector<T, N> &operator*=(const Vector<T, N> &) = delete;
+  constexpr Vector<T, N> &operator/=(T) = delete;
 
   [[nodiscard]] const NormalizedVector &Normalize() const noexcept {
     return *this;
@@ -164,8 +168,9 @@ public:
 
 template <arithmetic T, std::size_t N>
   requires(N > 0)
-std::expected<NormalizedVector<T, N>, typename Vector<T, N>::Error>
-Vector<T, N>::Normalize() const {
+auto Vector<T, N>::Normalize() const -> std::expected<NormalizedVector<T, N>, Error>
+  requires std::floating_point<T>
+{
   auto length = Length();
   using Promoted = decltype(length);
   if (length == Promoted{})
