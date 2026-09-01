@@ -44,8 +44,7 @@ public:
   }
 
   template <typename Self>
-  constexpr decltype(auto) operator[](this Self &&self,
-                                      const std::size_t index) {
+  constexpr decltype(auto) operator[](this Self &&self, const std::size_t index) {
     return std::forward<Self>(self).data[index];
   }
 
@@ -90,14 +89,12 @@ public:
     return left;
   }
 
-  [[nodiscard]] friend constexpr Vector operator*(Vector left,
-                                                  T right) noexcept {
+  [[nodiscard]] friend constexpr Vector operator*(Vector left, T right) noexcept {
     left *= right;
     return left;
   }
 
-  [[nodiscard]] friend constexpr Vector operator*(T left,
-                                                  Vector right) noexcept {
+  [[nodiscard]] friend constexpr Vector operator*(T left, Vector right) noexcept {
     right *= left;
     return right;
   }
@@ -112,12 +109,10 @@ public:
     return left;
   }
 
-  [[nodiscard]] friend constexpr auto Dot(const Vector &left,
-                                          const Vector &right) noexcept {
+  [[nodiscard]] friend constexpr auto Dot(const Vector &left, const Vector &right) noexcept {
     using Promoted = std::conditional_t<std::floating_point<T>, T, double>;
-    return std::transform_reduce(left.data.begin(), left.data.end(),
-                                 right.data.begin(), Promoted{}, std::plus<>{},
-                                 std::multiplies<>{});
+    return std::transform_reduce(left.data.begin(), left.data.end(), right.data.begin(), Promoted{},
+                                 std::plus<>{}, std::multiplies<>{});
   }
 
   [[nodiscard]] friend constexpr auto Cross(const Vector &left, const Vector &right) noexcept
@@ -161,9 +156,7 @@ public:
   constexpr Vector<T, N> &operator*=(const Vector<T, N> &) = delete;
   constexpr Vector<T, N> &operator/=(T) = delete;
 
-  [[nodiscard]] const NormalizedVector &Normalize() const noexcept {
-    return *this;
-  }
+  [[nodiscard]] const NormalizedVector &Normalize() const noexcept { return *this; }
 };
 
 template <arithmetic T, std::size_t N>
