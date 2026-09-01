@@ -52,6 +52,11 @@
         defaultPackage = self.packages.${system}.default;
         packages.pbf = self.packages.${system}.default;
 
+        formatter = pkgs.writeShellScriptBin "formatter" ''
+          find src -type f \( -name '*.cpp' -o -name '*.cppm' -o -name '*.h' -o -name '*.hpp' \) \
+            -exec ${pkgs.clang-tools}/bin/clang-format -i {} +
+        '';
+
         devShells.default = pkgs.mkShell {
           inherit configurePhase buildPhase;
 
