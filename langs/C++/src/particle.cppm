@@ -21,7 +21,7 @@ export struct Particle {
   Vec3f vorticity;
   float lambda;
 
-  [[nodiscard]] constexpr auto Fields(this Particle &self) noexcept {
+  [[nodiscard]] constexpr auto Members(this Particle &self) noexcept {
     auto &[p, pp, up, v, uv, vr, l] = self;
     return std::tie(p, pp, up, v, uv, vr, l);
   }
@@ -33,55 +33,59 @@ template <typename... Ts> struct SoA<std::tuple<Ts...>> {
 };
 
 export class Particles {
-  using types = decltype(std::declval<Particle &>().Fields());
+  using types = decltype(std::declval<Particle &>().Members());
   typename SoA<types>::type data;
-  static constexpr std::size_t field_count = std::tuple_size_v<types>;
+
+  template <std::size_t N> [[nodiscard]] constexpr decltype(auto) Slice(this auto &&self) noexcept {
+    return std::get<N>(std::forward<decltype(self)>(self).data);
+  }
 
 public:
-  enum class Field {
-    Position = 0,
-    PredictedPosition = 1,
-    UpdatedPosition = 2,
-    Velocity = 3,
-    UpdatedVelocity = 4,
-    Vorticity = 5,
-    Lambda = 6
-  };
-  static_assert(static_cast<std::size_t>(Field::Lambda) + 1 == field_count);
+  [[nodiscard]] constexpr decltype(auto) Positions(this auto &&self) noexcept {
+    return self.template Slice<0>();
+  }
 
-  explicit Particles(const Configuration::Box &box) {
-    const std::size_t total = box.counts[0] * box.counts[1] * box.counts[2];
+  [[nodiscard]] constexpr decltype(auto) PredictedPositions(this auto &&self) noexcept {
+    return self.template Slice<1>();
+  }
+
+  [[nodiscard]] constexpr decltype(auto) UpdatedPositions(this auto &&self) noexcept {
+    return self.template Slice<2>();
+  }
+
+  [[nodiscard]] constexpr decltype(auto) Velocities(this auto &&self) noexcept {
+    return self.template Slice<3>();
+  }
+
+  [[nodiscard]] constexpr decltype(auto) UpdatedVelocities(this auto &&self) noexcept {
+    return self.template Slice<4>();
+  }
+
+  [[nodiscard]] constexpr decltype(auto) Vorticities(this auto &&self) noexcept {
+    return self.template Slice<5>();
+  }
+
+  [[nodiscard]] constexpr decltype(auto) Lambdas(this auto &&self) noexcept {
+    return self.template Slice<6>();
+  }
+
+  explicit Particles(const Configuration::Particles &particles) {
+    const std::size_t total =
+        particles.resolution[0] * particles.resolution[1] * particles.resolution[2];
     if (total == 0)
       return;
 
-    std::apply([total](auto &...vecs) { (vecs.resize(total), ...); }, data);
-    auto &positions = std::get<static_cast<std::size_t>(Field::Position)>(data);
+    std::apply([total](auto &...vectors) { (vectors.resize(total), ...); }, data);
+    auto &positions = std::get<0>(data);
 
-    const Vec3f size = {box.size[0] * 2.0f / static_cast<float>(box.counts[0]),
-                        box.size[1] * 2.0f / static_cast<float>(box.counts[1]),
-                        box.size[2] * 2.0f / static_cast<float>(box.counts[2])};
+    const Vec3f size = particles.size * 2.0f / Vec3f{particles.resolution};
+    const Vec3f start = particles.origin - particles.size + size * 0.5f;
 
-    const Vec3f start = {box.origin[0] - box.size[0] + size[0] * 0.5f,
-                         box.origin[1] - box.size[1] + size[1] * 0.5f,
-                         box.origin[2] - box.size[2] + size[2] * 0.5f};
-
-    std::size_t idx = 0;
-    for (std::size_t i : std::views::iota(0uz, box.counts[0])) {
-      for (std::size_t j : std::views::iota(0uz, box.counts[1])) {
-        for (std::size_t k : std::views::iota(0uz, box.counts[2])) {
-          positions[idx++] = Vec3f{start[0] + static_cast<float>(i) * size[0],
-                                   start[1] + static_cast<float>(j) * size[1],
-                                   start[2] + static_cast<float>(k) * size[2]};
-        }
-      }
-    }
-  }
-
-  template <Field F>
-  [[nodiscard]] constexpr decltype(auto) Get(this auto &&self) noexcept {
-    constexpr std::size_t field_index = static_cast<std::size_t>(F);
-    static_assert(field_index < field_count, "Field out of range!");
-    return std::get<field_index>(std::forward<decltype(self)>(self).data);
+    std::size_t index = 0;
+    for (std::size_t i : std::views::iota(0uz, particles.resolution[0]))
+      for (std::size_t j : std::views::iota(0uz, particles.resolution[1]))
+        for (std::size_t k : std::views::iota(0uz, particles.resolution[2]))
+          positions[index++] = start + Vec3f{i, j, k} * size;
   }
 };
 
