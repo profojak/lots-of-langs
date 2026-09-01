@@ -14,18 +14,17 @@ constexpr float radius_2 = radius * radius;
 constexpr float radius_4 = radius_2 * radius_2;
 constexpr float poly6_coefficient =
     315.0f / (64.0f * std::numbers::pi_v<float> * radius * radius_4 * radius_4);
-constexpr float spiky_coefficient =
-    -45.0f / (std::numbers::pi_v<float> * radius_2 * radius_4);
+constexpr float spiky_coefficient = -45.0f / (std::numbers::pi_v<float> * radius_2 * radius_4);
 
-[[nodiscard]] constexpr float Poly6(const float length) {
-  if (length > radius)
+[[nodiscard]] constexpr float Poly6(const float length_squared) {
+  if (length_squared > radius_2)
     return 0.0f;
-  const float diff = radius_2 - length * length;
+  const float diff = radius_2 - length_squared;
   return poly6_coefficient * diff * diff * diff;
 }
 
 [[nodiscard]] constexpr float Poly6(const Vec3f &r) {
-  return Poly6(r.Length());
+  return Poly6(r.LengthSquared());
 }
 
 [[nodiscard]] const Vec3f Spiky(const Vec3f &r) {
@@ -35,5 +34,8 @@ constexpr float spiky_coefficient =
   const float diff = radius - length;
   return (spiky_coefficient * diff * diff / length) * r;
 }
+
+constexpr float delta_q = 0.2f * radius;
+constexpr float poly6_delta_q = Poly6(delta_q * delta_q);
 
 } // namespace pbf
