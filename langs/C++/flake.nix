@@ -11,7 +11,16 @@
       let
         pkgs = import nixpkgs { inherit system; };
         clangStdenv = pkgs.overrideCC pkgs.stdenv pkgs.clang;
-        cxxFlags = [ "-std=c++23" ];
+        cxxFlags = [ "-std=c++23" "-O3" ];
+        cxxModules = [
+          "vector"
+          "config"
+          "particle"
+          "kernel"
+          "thread"
+          "grid"
+          "solver"
+        ];
 
         configurePhase = ''
           runHook preConfigure
@@ -21,9 +30,9 @@
 
         buildPhase = ''
           runHook preBuild
-          for f in src/*.cppm; do
-            m=$(basename "$f" .cppm)
-            $CXX ${toString cxxFlags} -fmodule-output="build/$m.pcm" -c "$f" -o "build/$m.o"
+          for m in ${toString cxxModules}; do
+            $CXX ${toString cxxFlags} -fprebuilt-module-path=build \
+              -fmodule-output="build/$m.pcm" -c "src/$m.cppm" -o "build/$m.o"
           done
           $CXX ${toString cxxFlags} -fprebuilt-module-path=build -c src/main.cpp -o build/main.o
           $CXX build/*.o -o pbf
