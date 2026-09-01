@@ -35,8 +35,13 @@ public:
 
   template <typename... Args>
     requires(sizeof...(Args) == N && (std::convertible_to<Args, T> && ...))
-  explicit(N == 1) constexpr Vector(Args... args)
-      : data{static_cast<T>(args)...} {}
+  explicit(N == 1) constexpr Vector(Args... args) : data{static_cast<T>(std::move(args))...} {}
+
+  explicit constexpr Vector(T scalar)
+    requires(N > 1)
+  {
+    data.fill(static_cast<T>(scalar));
+  }
 
   template <typename Self>
   constexpr decltype(auto) operator[](this Self &&self,
@@ -59,6 +64,11 @@ public:
     return *this;
   }
 
+  constexpr Vector &operator*=(const Vector &other) noexcept {
+    std::ranges::transform(data, other.data, data.begin(), std::multiplies<>{});
+    return *this;
+  }
+
   constexpr Vector &operator/=(T scalar) noexcept {
     std::ranges::for_each(data, [scalar](T &value) { value /= scalar; });
     return *this;
@@ -70,14 +80,12 @@ public:
     return res;
   }
 
-  [[nodiscard]] friend constexpr Vector operator+(Vector left,
-                                                  const Vector &right) {
+  [[nodiscard]] friend constexpr Vector operator+(Vector left, const Vector &right) noexcept {
     left += right;
     return left;
   }
 
-  [[nodiscard]] friend constexpr Vector operator-(Vector left,
-                                                  const Vector &right) {
+  [[nodiscard]] friend constexpr Vector operator-(Vector left, const Vector &right) noexcept {
     left -= right;
     return left;
   }
@@ -94,8 +102,12 @@ public:
     return right;
   }
 
-  [[nodiscard]] friend constexpr Vector operator/(Vector left,
-                                                  T right) noexcept {
+  [[nodiscard]] friend constexpr Vector operator*(Vector left, const Vector &right) noexcept {
+    left *= right;
+    return left;
+  }
+
+  [[nodiscard]] friend constexpr Vector operator/(Vector left, T right) noexcept {
     left /= right;
     return left;
   }
@@ -108,22 +120,14 @@ public:
                                  std::multiplies<>{});
   }
 
-  [[nodiscard]] friend constexpr auto Cross(const Vector &left,
-                                            const Vector &right) noexcept {
-    return Vector{left[1] * right[2] - left[2] * right[1],
-                  left[2] * right[0] - left[0] * right[2],
+  [[nodiscard]] friend constexpr auto Cross(const Vector &left, const Vector &right) noexcept
+    requires(N == 3)
+  {
+    return Vector{left[1] * right[2] - left[2] * right[1], left[2] * right[0] - left[0] * right[2],
                   left[0] * right[1] - left[1] * right[0]};
   }
 
-  [[nodiscard]] auto Length() const noexcept {
-    using Promoted = std::conditional_t<std::floating_point<T>, T, double>;
-    Promoted sum{};
-    std::ranges::for_each(data, [&](const T value) {
-      Promoted promoted = static_cast<Promoted>(value);
-      sum += promoted * promoted;
-    });
-    return std::sqrt(sum);
-  }
+  [[nodiscard]] constexpr auto LengthSquared() const noexcept { return Dot(*this, *this); }
 
   [[nodiscard]] std::expected<NormalizedVector<T, N>, Error> Normalize() const;
 };
