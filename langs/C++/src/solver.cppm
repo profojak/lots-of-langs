@@ -9,7 +9,7 @@ module;
 
 export module solver;
 
-import config;
+import configuration;
 import grid;
 import particle;
 import thread;

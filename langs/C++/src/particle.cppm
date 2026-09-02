@@ -7,7 +7,7 @@ module;
 
 export module particle;
 
-import config;
+import configuration;
 import vector;
 
 namespace pbf {

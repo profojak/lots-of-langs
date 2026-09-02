@@ -14,7 +14,7 @@
         cxxFlags = [ "-std=c++23" "-O3" ];
         cxxModules = [
           "vector"
-          "config"
+          "configuration"
           "particle"
           "kernel"
           "thread"

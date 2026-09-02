@@ -1,4 +1,4 @@
-export module config;
+export module configuration;
 
 import vector;
 
