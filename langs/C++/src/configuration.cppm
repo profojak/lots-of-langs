@@ -15,8 +15,8 @@ export struct Configuration {
   struct Parameters {
     unsigned threads = 0;
     float delta_time = 0.01f;
-    int solver_iterations = 3;
-    int simulation_steps = 1000;
+    unsigned solver_iterations = 3;
+    unsigned simulation_steps = 1000;
     Vec3f gravity{0.0f, -9.81f, 0.0f};
     float rest_density = 1010.0f;
     float relaxation_epsilon = 450.0f;
@@ -30,8 +30,8 @@ export struct Configuration {
   } bounds;
 
   struct Visuals {
-    int window_width = 800;
-    int window_height = 600;
+    unsigned window_width = 800;
+    unsigned window_height = 600;
   } visuals;
 };
 

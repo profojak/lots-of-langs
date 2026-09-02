@@ -156,7 +156,7 @@ public:
 
     grid.Rebuild(predicted_positions);
 
-    for (int iteration = 0; iteration < parameters.solver_iterations; ++iteration) {
+    for (unsigned iteration = 0; iteration < parameters.solver_iterations; ++iteration) {
       threads.ParallelFor(count,
                           std::bind_back(ComputeLambdas, predicted_positions, lambdas,
                                          inv_rest_density, std::cref(parameters), std::cref(grid)));
