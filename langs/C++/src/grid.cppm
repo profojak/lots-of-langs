@@ -27,7 +27,7 @@ export class Grid {
 
   template <std::size_t Axis>
   [[nodiscard]] std::size_t CellCoordinateAt(const Vec3f &position) const {
-    const float cell = std::floor((position[Axis] + offset[Axis]) / radius);
+    const float cell = std::floor((position[Axis] + offset[Axis]) / smoothing_radius);
     const float clamped = std::clamp(cell, 0.0f, static_cast<float>(dimensions[Axis] - 1uz));
     return static_cast<std::size_t>(clamped);
   }
@@ -48,10 +48,11 @@ export class Grid {
   }
 
 public:
-  explicit Grid(const Vec3f &bounds) {
+  explicit Grid(const Vec3f &domain) {
     for (std::size_t k = 0; k < 3; ++k) {
-      offset[k] = bounds[k] + radius;
-      dimensions[k] = std::max(1uz, static_cast<std::size_t>(std::ceil(offset[k] * 2.0f / radius)));
+      offset[k] = domain[k] + smoothing_radius;
+      dimensions[k] =
+          std::max(1uz, static_cast<std::size_t>(std::ceil(offset[k] * 2.0f / smoothing_radius)));
     }
     cell_count = dimensions[0] * dimensions[1] * dimensions[2];
     assert(cell_count >= dimensions[0] && cell_count >= dimensions[1] &&
@@ -95,7 +96,7 @@ public:
     const auto [y0, y1] = CellNeighborsCoordinates<1>(cell_coordinates[1]);
     const auto [z0, z1] = CellNeighborsCoordinates<2>(cell_coordinates[2]);
 
-    const float max_distance_squared = radius * radius;
+    const float max_distance_squared = smoothing_radius * smoothing_radius;
     for (std::size_t z = z0; z <= z1; ++z)
       for (std::size_t y = y0; y <= y1; ++y)
         for (std::size_t x = x0; x <= x1; ++x) {

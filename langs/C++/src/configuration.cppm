@@ -9,12 +9,13 @@ export struct Configuration {
     Vec3f origin{0.0f, 0.0f, 0.0f};
     Vec3f size{0.5f, 0.5f, 0.5f};
     Vec3u resolution{10, 10, 10};
+    float radius = 0.001f;
   } particles;
 
   struct Parameters {
     float delta_time = 0.01f;
-    float particle_size = 0.001f;
     int solver_iterations = 3;
+    int simulation_steps = 1000;
     Vec3f gravity{0.0f, -9.81f, 0.0f};
     float rest_density = 1010.0f;
     float relaxation_epsilon = 450.0f;
@@ -23,7 +24,14 @@ export struct Configuration {
     float artificial_pressure_gain = 0.001f;
   } parameters;
 
-  Vec3f bounds{1.0f, 1.0f, 1.0f};
+  struct Bounds {
+    Vec3f domain{1.0f, 1.0f, 1.0f};
+  } bounds;
+
+  struct Visuals {
+    int window_width = 800;
+    int window_height = 600;
+  } visuals;
 };
 
 } // namespace pbf

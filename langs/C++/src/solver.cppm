@@ -73,8 +73,8 @@ export class PBFSolver final : public Solver {
 
       Vec3f delta = predictions[i] + position;
       for (std::size_t axis : std::views::iota(0uz, 3uz)) {
-        const float minimum = -configuration.bounds[axis] + configuration.parameters.particle_size;
-        const float maximum = configuration.bounds[axis] - configuration.parameters.particle_size;
+        const float minimum = -configuration.bounds.domain[axis] + configuration.particles.radius;
+        const float maximum = configuration.bounds.domain[axis] - configuration.particles.radius;
         if (delta[axis] < minimum)
           position[axis] = minimum - predictions[i][axis];
         else if (delta[axis] > maximum)
@@ -126,7 +126,7 @@ export class PBFSolver final : public Solver {
 
 public:
   explicit PBFSolver(const Configuration &configuration)
-      : configuration{configuration}, threads(), grid{configuration.bounds} {}
+      : configuration{configuration}, threads(), grid{configuration.bounds.domain} {}
 
   void Step(Particles &particles) override {
     const Parameters &parameters = configuration.parameters;
