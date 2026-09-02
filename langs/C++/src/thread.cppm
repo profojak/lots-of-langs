@@ -47,11 +47,9 @@ export class Threads {
   }
 
 public:
-  Threads() : Threads(std::thread::hardware_concurrency()) {}
-
   explicit Threads(std::size_t thread_count) {
     if (thread_count == 0)
-      thread_count = 1;
+      thread_count = std::thread::hardware_concurrency();
     workers.reserve(thread_count);
     for (std::size_t i = 0; i < thread_count; ++i)
       workers.emplace_back([this](std::stop_token stop) { WorkerLoop(stop); });

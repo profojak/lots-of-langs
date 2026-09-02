@@ -126,7 +126,8 @@ export class PBFSolver final : public Solver {
 
 public:
   explicit PBFSolver(const Configuration &configuration)
-      : configuration{configuration}, threads(), grid{configuration.bounds.domain} {}
+      : configuration{configuration}, threads{configuration.parameters.threads},
+        grid{configuration.bounds.domain} {}
 
   void Step(Particles &particles) override {
     const Parameters &parameters = configuration.parameters;

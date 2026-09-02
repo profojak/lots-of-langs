@@ -13,6 +13,7 @@ export struct Configuration {
   } particles;
 
   struct Parameters {
+    unsigned threads = 0;
     float delta_time = 0.01f;
     int solver_iterations = 3;
     int simulation_steps = 1000;
