@@ -62,6 +62,15 @@ public:
     cell_offsets.resize(cell_count + 1);
   }
 
+  template <typename Self>
+  [[nodiscard]] std::span<const std::size_t> operator[](this Self &&self, std::size_t x,
+                                                       std::size_t y, std::size_t z) {
+    const std::size_t cell = std::forward<Self>(self).CellIndex({x, y, z});
+    const auto first = std::forward<Self>(self).particle_indices.begin();
+    return {first + std::forward<Self>(self).cell_offsets[cell],
+            first + std::forward<Self>(self).cell_offsets[cell + 1]};
+  }
+
   void Rebuild(std::span<const Vec3f> positions) {
     const std::size_t particle_count = positions.size();
     particle_cells.resize(particle_count);
@@ -99,14 +108,10 @@ public:
     const float max_distance_squared = smoothing_radius * smoothing_radius;
     for (std::size_t z = z0; z <= z1; ++z)
       for (std::size_t y = y0; y <= y1; ++y)
-        for (std::size_t x = x0; x <= x1; ++x) {
-          const std::size_t cell = CellIndex({x, y, z});
-          for (std::size_t k = cell_offsets[cell]; k < cell_offsets[cell + 1]; ++k) {
-            const std::size_t j = particle_indices[k];
+        for (std::size_t x = x0; x <= x1; ++x)
+          for (const std::size_t j : (*this)[x, y, z])
             if (j != i && (position - positions[j]).LengthSquared() <= max_distance_squared)
               f(j);
-          }
-        }
   }
 };
 
