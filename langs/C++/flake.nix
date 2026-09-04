@@ -11,15 +11,22 @@
       let
         pkgs = import nixpkgs { inherit system; };
         clangStdenv = pkgs.overrideCC pkgs.stdenv pkgs.clang;
-        cxxFlags = [ "-std=c++23" "-O3" ];
+        cxxFlags = [
+          "-std=c++23"
+          "-O3"
+          "'-DPBF_LANGUAGE=\"C++23\"'"
+        ];
         cxxModules = [
+          "argument"
           "vector"
+          "boundary"
           "configuration"
           "particle"
           "kernel"
           "thread"
           "grid"
           "solver"
+          "renderer"
         ];
 
         configurePhase = ''
