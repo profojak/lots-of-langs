@@ -76,7 +76,7 @@ public:
 
     std::size_t begin = 0;
     for (std::size_t c = 0; c + 1 < chunks; ++c, begin += chunk)
-      Enqueue([&, begin, end = begin + chunk] {
+      Enqueue([&task, &done, begin, end = begin + chunk] {
         task(begin, end);
         done.count_down();
       });
