@@ -15,6 +15,8 @@
           "-std=c++23"
           "-O3"
           "'-DPBF_LANGUAGE=\"C++23\"'"
+        ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
+          "-mmacosx-version-min=26.0"
         ];
         cxxModules = [
           "argument"
