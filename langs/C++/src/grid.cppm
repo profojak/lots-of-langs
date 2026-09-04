@@ -5,6 +5,7 @@ module;
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <mdspan>
 #include <span>
 #include <vector>
 
@@ -18,7 +19,7 @@ namespace pbf {
 
 export class Grid {
   std::array<float, 3> offset;
-  std::array<std::size_t, 3> dimensions;
+  std::dextents<std::size_t, 3> dimensions;
   std::size_t cell_count = 0;
   std::vector<std::size_t> cell_counts;
   std::vector<std::size_t> cell_offsets;
@@ -28,7 +29,7 @@ export class Grid {
   template <std::size_t Axis>
   [[nodiscard]] std::size_t CellCoordinateAt(const Vec3f &position) const {
     const float cell = std::floor((position[Axis] + offset[Axis]) / smoothing_radius);
-    const float clamped = std::clamp(cell, 0.0f, static_cast<float>(dimensions[Axis] - 1uz));
+    const float clamped = std::clamp(cell, 0.0f, static_cast<float>(dimensions.extent(Axis) - 1uz));
     return static_cast<std::size_t>(clamped);
   }
 
@@ -38,25 +39,27 @@ export class Grid {
   }
 
   [[nodiscard]] std::size_t CellIndex(const Vec3u &cell_coordinates) const {
-    return cell_coordinates[0] +
-           dimensions[0] * (cell_coordinates[1] + dimensions[1] * cell_coordinates[2]);
+    return std::layout_left::mapping{dimensions}(cell_coordinates[0], cell_coordinates[1],
+                                                 cell_coordinates[2]);
   }
 
   template <std::size_t Axis>
   [[nodiscard]] std::pair<std::size_t, std::size_t> CellNeighborsCoordinates(std::size_t c) const {
-    return {c == 0 ? 0 : c - 1, std::min(c + 1, dimensions[Axis] - 1uz)};
+    return {c == 0 ? 0 : c - 1, std::min(c + 1, dimensions.extent(Axis) - 1uz)};
   }
 
 public:
   explicit Grid(const Vec3f &domain) {
+    std::array<std::size_t, 3> extents{};
     for (std::size_t k = 0; k < 3; ++k) {
       offset[k] = domain[k] + smoothing_radius;
-      dimensions[k] =
+      extents[k] =
           std::max(1uz, static_cast<std::size_t>(std::ceil(offset[k] * 2.0f / smoothing_radius)));
     }
-    cell_count = dimensions[0] * dimensions[1] * dimensions[2];
-    assert(cell_count >= dimensions[0] && cell_count >= dimensions[1] &&
-           cell_count >= dimensions[2]);
+    dimensions = std::dextents<std::size_t, 3>{extents[0], extents[1], extents[2]};
+    cell_count = dimensions.extent(0) * dimensions.extent(1) * dimensions.extent(2);
+    assert(cell_count >= dimensions.extent(0) && cell_count >= dimensions.extent(1) &&
+           cell_count >= dimensions.extent(2));
 
     cell_counts.resize(cell_count);
     cell_offsets.resize(cell_count + 1);
