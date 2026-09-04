@@ -27,7 +27,7 @@ void PrintHelp() {
 
 export Arguments ParseArguments(std::span<char *const> args) {
   Arguments arguments;
-  for (int i = 1; i < args.size(); ++i) {
+  for (std::size_t i = 0; i < args.size(); ++i) {
     std::string_view argument = args[i];
     if (argument == "-h" || argument == "--help") {
       PrintHelp();
