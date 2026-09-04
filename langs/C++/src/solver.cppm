@@ -1,14 +1,21 @@
 module;
 
 #include <algorithm>
+#include <cmath>
+#include <concepts>
 #include <cstddef>
 #include <expected>
 #include <functional>
+#include <limits>
 #include <ranges>
 #include <span>
+#include <type_traits>
+#include <utility>
+#include <variant>
 
 export module solver;
 
+import boundary;
 import configuration;
 import grid;
 import particle;
@@ -24,7 +31,7 @@ export class Solver {
 public:
   virtual ~Solver() = default;
 
-  virtual void Step(Particles &particles) = 0;
+  virtual void Step(Particles &particles, const Wand &wand = {}) = 0;
 };
 
 export class PBFSolver final : public Solver {
@@ -51,8 +58,59 @@ export class PBFSolver final : public Solver {
       float denominator = (Dot(gradient_sum, gradient_sum) + gradient_sum_squared) *
                               (inv_rest_density * inv_rest_density) +
                           parameters.relaxation_epsilon;
-
       lambdas[i] = -density_constraint / denominator;
+    }
+  }
+
+  static void DetectCollisions(Vec3f &correction, const Vec3f &prediction,
+                               const Configuration &configuration) noexcept {
+    const Vec3f position = prediction + correction;
+    for (const std::size_t axis : std::views::iota(0uz, 3uz)) {
+      const float minimum = -configuration.bounds.domain[axis] + configuration.particles.radius;
+      const float maximum = configuration.bounds.domain[axis] - configuration.particles.radius;
+      if (position[axis] < minimum)
+        correction[axis] = minimum - prediction[axis];
+      else if (position[axis] > maximum)
+        correction[axis] = maximum - prediction[axis];
+    }
+
+    for (const Boundary &boundary : configuration.bounds.boundaries) {
+      const Vec3f target = prediction + correction;
+      std::visit(
+          [&](const auto &shape) {
+            using Shape = std::remove_cvref_t<decltype(shape)>;
+            if constexpr (std::same_as<Shape, Box>) {
+              const float radius = configuration.particles.radius;
+              const Vec3f difference = target - shape.origin;
+              const Vec3f penetration{std::abs(difference[0]) - shape.size[0] - radius,
+                                      std::abs(difference[1]) - shape.size[1] - radius,
+                                      std::abs(difference[2]) - shape.size[2] - radius};
+
+              std::size_t axis = 0uz;
+              for (const std::size_t i : std::views::iota(1uz, 3uz))
+                if (penetration[i] > penetration[axis])
+                  axis = i;
+              if (penetration[axis] > 0.0f)
+                return;
+
+              const float direction = difference[axis] < 0.0f ? -1.0f : 1.0f;
+              correction[axis] += direction * (shape.size[axis] + configuration.particles.radius) -
+                                  difference[axis];
+            } else if constexpr (std::same_as<Shape, Sphere>) {
+              const Vec3f difference = target - shape.center;
+              const float distance = difference.Length();
+              const float minimum = shape.radius + configuration.particles.radius;
+              if (distance >= minimum)
+                return;
+
+              const Vec3f direction = distance > std::numeric_limits<float>::epsilon()
+                                          ? difference / distance
+                                          : Vec3f{0.0f, 1.0f, 0.0f};
+              correction = shape.center + direction * minimum - prediction;
+            } else
+              std::unreachable();
+          },
+          boundary);
     }
   }
 
@@ -61,25 +119,17 @@ export class PBFSolver final : public Solver {
                             const float inv_rest_density, const Configuration &configuration,
                             const Grid &grid) noexcept {
     for (std::size_t i = begin; i < end; ++i) {
-      Vec3f &position = updated_positions[i];
+      Vec3f &correction = updated_positions[i];
       grid.ForEachNeighbor(predictions, i, [&](std::size_t j) noexcept {
         const Vec3f gradient = Spiky(predictions[i] - predictions[j]);
         const float ratio = Poly6(predictions[i] - predictions[j]) / poly6_delta_q;
         const float artificial_pressure =
             -configuration.parameters.artificial_pressure_gain * ratio * ratio * ratio * ratio;
-        position += (lambdas[i] + lambdas[j] + artificial_pressure) * gradient;
+        correction += (lambdas[i] + lambdas[j] + artificial_pressure) * gradient;
       });
-      position *= inv_rest_density;
+      correction *= inv_rest_density;
 
-      Vec3f delta = predictions[i] + position;
-      for (std::size_t axis : std::views::iota(0uz, 3uz)) {
-        const float minimum = -configuration.bounds.domain[axis] + configuration.particles.radius;
-        const float maximum = configuration.bounds.domain[axis] - configuration.particles.radius;
-        if (delta[axis] < minimum)
-          position[axis] = minimum - predictions[i][axis];
-        else if (delta[axis] > maximum)
-          position[axis] = maximum - predictions[i][axis];
-      }
+      DetectCollisions(correction, predictions[i], configuration);
     }
   }
 
@@ -124,12 +174,34 @@ export class PBFSolver final : public Solver {
     }
   }
 
+  static void PushWithWand(std::size_t begin, std::size_t end, std::span<Vec3f> velocities,
+                           std::span<const Vec3f> positions, const Wand &wand,
+                           const Configuration &configuration) noexcept {
+    const float wand_radius_2 = configuration.bounds.wand_radius * configuration.bounds.wand_radius;
+    const float impulse = configuration.bounds.wand_strength * configuration.parameters.delta_time;
+
+    for (std::size_t i = begin; i < end; ++i) {
+      const Vec3f offset = positions[i] - wand.origin;
+      const float t = std::max(Dot(offset, wand.direction), 0.0f);
+      const Vec3f difference = offset - wand.direction * t;
+      const float distance_squared = difference.LengthSquared();
+      if (distance_squared >= wand_radius_2)
+        continue;
+
+      const float distance = std::sqrt(distance_squared);
+      const Vec3f direction = distance > std::numeric_limits<float>::epsilon()
+                                  ? difference / distance
+                                  : Vec3f{0.0f, 1.0f, 0.0f};
+      velocities[i] += direction * (impulse * (1.0f - distance / configuration.bounds.wand_radius));
+    }
+  }
+
 public:
   explicit PBFSolver(const Configuration &configuration)
       : configuration{configuration}, threads{configuration.parameters.threads},
         grid{configuration.bounds.domain} {}
 
-  void Step(Particles &particles) override {
+  void Step(Particles &particles, const Wand &wand = {}) override {
     const Parameters &parameters = configuration.parameters;
 
     std::span positions{particles.Positions()};
@@ -144,6 +216,10 @@ public:
       return;
     const auto count = positions.size();
     const float inv_rest_density = 1.0f / parameters.rest_density;
+
+    if (wand.active)
+      threads.ParallelFor(count, std::bind_back(PushWithWand, velocities, positions,
+                                                std::cref(wand), std::cref(configuration)));
 
     threads.ParallelFor(
         count, [positions, predicted_positions, velocities,
@@ -187,12 +263,7 @@ public:
                                               velocities, updated_velocities, vorticities,
                                               std::cref(parameters), std::cref(grid)));
     std::ranges::copy(updated_velocities, velocities.begin());
-
-    threads.ParallelFor(
-        count, [positions, predicted_positions](std::size_t begin, std::size_t end) noexcept {
-          for (std::size_t i = begin; i < end; ++i)
-            positions[i] = predicted_positions[i];
-        });
+    std::ranges::copy(predicted_positions, positions.begin());
   }
 };
 
