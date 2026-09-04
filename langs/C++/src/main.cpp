@@ -17,6 +17,15 @@ int main(int argc, char **argv) {
   }
 
   pbf::Configuration configuration;
+  try {
+    if (arguments.configuration_file)
+      configuration.LoadFromFile(*arguments.configuration_file);
+    configuration.LoadFromArguments(arguments);
+  } catch (const std::exception &e) {
+    std::println("Configuration error: {}", e.what());
+    return 2;
+  }
+
   pbf::Particles particles(configuration.particles);
   pbf::PBFSolver solver{configuration};
 
