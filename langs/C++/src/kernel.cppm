@@ -16,18 +16,18 @@ constexpr float poly6_coefficient =
     315.0f / (64.0f * std::numbers::pi_v<float> * smoothing_radius * radius_4 * radius_4);
 constexpr float spiky_coefficient = -45.0f / (std::numbers::pi_v<float> * radius_2 * radius_4);
 
-[[nodiscard]] constexpr float Poly6(const float length_squared) {
+[[nodiscard]] constexpr float Poly6(const float length_squared) noexcept {
   if (length_squared > radius_2)
     return 0.0f;
   const float diff = radius_2 - length_squared;
   return poly6_coefficient * diff * diff * diff;
 }
 
-[[nodiscard]] constexpr float Poly6(const Vec3f &r) {
+[[nodiscard]] constexpr float Poly6(const Vec3f &r) noexcept {
   return Poly6(r.LengthSquared());
 }
 
-[[nodiscard]] const Vec3f Spiky(const Vec3f &r) {
+[[nodiscard]] Vec3f Spiky(const Vec3f &r) noexcept {
   const float length = r.Length();
   if (length < std::numeric_limits<float>::epsilon() || length > smoothing_radius)
     return {};
