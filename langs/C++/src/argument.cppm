@@ -22,7 +22,18 @@ export struct Arguments {
 };
 
 void PrintHelp() {
-  std::println("Position Based Fluids in {}", PBF_LANGUAGE);
+  std::println(
+      "Position Based Fluids in {}\n\n"
+      "  Usage: pbf [options] [key=value ...]\n\n"
+      "  Options:\n"
+      "    -h, --help           Show this help and exit\n"
+      "    -n, --no-gui         Run without GUI (headless simulation)\n"
+      "    -c, --config <file>  Load configuration file (key=value per line)\n\n"
+      "  Overrides:\n"
+      "    key=value            Override a configuration value, e.g. visuals.window_width=1280\n"
+      "                         Vectors are comma-separated, e.g. parameters.gravity=0,-9.81,0\n"
+      "                         See configs/default.conf for all keys",
+      PBF_LANGUAGE);
 }
 
 export Arguments ParseArguments(std::span<char *const> args) {
