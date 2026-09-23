@@ -11,10 +11,11 @@
       let
         pkgs = import nixpkgs { inherit system; };
         clangStdenv = pkgs.overrideCC pkgs.stdenv pkgs.clang;
+        mkShell = pkgs.mkShell.override { stdenv = clangStdenv; };
         cxxFlags = [
           "-std=c++23"
           "-O3"
-          "'-DPBF_LANGUAGE=\"C++23\"'"
+          "-DPBF_LANGUAGE=\"C++23\""
         ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
           "-mmacosx-version-min=26.0"
         ];
@@ -40,11 +41,11 @@
         buildPhase = ''
           runHook preBuild
           for m in ${toString cxxModules}; do
-            $CXX ${toString cxxFlags} -fprebuilt-module-path=build \
+            $CXX ${pkgs.lib.escapeShellArgs cxxFlags} -fprebuilt-module-path=build \
               -fmodule-output="build/$m.pcm" -c "src/$m.cppm" -o "build/$m.o"
           done
-          $CXX ${toString cxxFlags} -fprebuilt-module-path=build -c src/main.cpp -o build/main.o
-          $CXX build/*.o -o pbf
+          $CXX ${pkgs.lib.escapeShellArgs cxxFlags} -fprebuilt-module-path=build -c src/main.cpp -o build/main.o
+          $CXX ${pkgs.lib.escapeShellArgs cxxFlags} build/*.o -o pbf -lraylib
           runHook postBuild
         '';
 
@@ -63,7 +64,6 @@
           src = ./.;
           inherit configurePhase buildPhase installPhase;
           buildInputs = [ pkgs.raylib ];
-          NIX_LDFLAGS = "-lraylib";
           meta.mainProgram = "pbf";
         };
 
@@ -75,7 +75,7 @@
             -exec ${pkgs.clang-tools}/bin/clang-format -i {} +
         '';
 
-        devShells.default = pkgs.mkShell {
+        devShells.default = mkShell {
           inherit configurePhase buildPhase;
 
           packages = [
@@ -89,8 +89,11 @@
           shellHook = ''
             {
               echo 'CompileFlags:'
+              echo '  Compiler: ${pkgs.llvmPackages.clang-unwrapped}/bin/clang++'
               echo '  Add:'
               echo '    - -std=c++23'
+              ${pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isDarwin "echo '    - -mmacosx-version-min=26.0'"}
+              echo '    - -DPBF_LANGUAGE="C++23"'
               echo '    - -I${pkgs.raylib}/include'
               echo '    - -isystem'
               echo '    - ${pkgs.libcxx.dev}/include/c++/v1'
