@@ -17,6 +17,7 @@ namespace pbf {
 
 export struct Arguments {
   std::optional<std::string> configuration_file;
+  std::optional<std::string> load_file;
   bool no_gui{false};
   bool dump{false};
   std::vector<std::pair<std::string, std::string>> parameters;
@@ -30,6 +31,7 @@ void PrintHelp() {
       "    -h, --help           Show this help and exit\n"
       "    -n, --no-gui         Run without GUI (headless simulation)\n"
       "    -d, --dump           Dump final particle positions to 'particles.txt'\n"
+      "    -l, --load [file]    Load positions from file (default: 'particles.txt')\n"
       "    -c, --config <file>  Load configuration file (key=value per line)\n\n"
       "  Overrides:\n"
       "    key=value            Override a configuration value, e.g. 'visuals.window_width=1280'\n"
@@ -49,6 +51,11 @@ export Arguments ParseArguments(std::span<char *const> args) {
       arguments.no_gui = true;
     } else if (argument == "-d" || argument == "--dump") {
       arguments.dump = true;
+    } else if (argument == "-l" || argument == "--load") {
+      arguments.load_file = "particles.txt";
+      const std::string_view next = i + 1 < args.size() ? args[i + 1] : std::string_view{};
+      if (!next.empty() && !next.starts_with('-') && next.find('=') == std::string_view::npos)
+        arguments.load_file = args[++i];
     } else if (argument == "-c" || argument == "--config") {
       if (i + 1 >= args.size())
         throw std::invalid_argument("Missing value for configuration file!");

@@ -27,6 +27,15 @@ int main(int argc, char **argv) {
   }
 
   pbf::Particles particles(configuration.particles);
+  if (arguments.load_file) {
+    try {
+      particles.Load(*arguments.load_file);
+    } catch (const std::exception &e) {
+      std::println("Particle load error: {}", e.what());
+      return 3;
+    }
+  }
+
   pbf::PBFSolver solver{configuration};
 
   if (arguments.no_gui) {

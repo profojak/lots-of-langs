@@ -1,8 +1,10 @@
 module;
 
+#include <algorithm>
 #include <format>
 #include <fstream>
 #include <ranges>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -91,6 +93,27 @@ public:
       for (std::size_t j : std::views::iota(0uz, particles.resolution[1]))
         for (std::size_t k : std::views::iota(0uz, particles.resolution[2]))
           positions[index++] = start + Vec3f{i, j, k} * size;
+  }
+
+  void Load(this Particles &self, std::string_view path = "particles.txt") {
+    std::ifstream file{std::string(path)};
+    if (!file)
+      throw std::runtime_error(std::format("Failed to open particle dump file '{}'!", path));
+
+    std::string line;
+    std::getline(file, line);
+
+    std::vector<Vec3f> positions;
+    for (; std::getline(file, line);) {
+      std::ranges::replace(line, ',', ' ');
+      std::istringstream input{line};
+      positions.emplace_back();
+      input >> positions.back()[0] >> positions.back()[1] >> positions.back()[2];
+    }
+
+    std::apply([&positions](auto &...vectors) { (vectors.resize(positions.size()), ...); },
+               self.data);
+    std::ranges::copy(positions, self.Positions().begin());
   }
 
   void Dump(this const Particles &self, std::string_view path = "particles.txt") {
