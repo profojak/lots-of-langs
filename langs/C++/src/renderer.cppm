@@ -101,6 +101,7 @@ export class Renderer {
 
 public:
   explicit Renderer(const Configuration &configuration) : configuration{configuration} {
+    SetTraceLogLevel(LOG_WARNING);
     InitWindow(configuration.visuals.window_width, configuration.visuals.window_height,
                std::format("Position Based Fluids in {}", PBF_LANGUAGE).c_str());
     SetTargetFPS(60);
