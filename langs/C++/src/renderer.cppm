@@ -135,7 +135,13 @@ public:
 
     constexpr int max_steps_per_frame = 5;
     float accumulator = 0.0f;
+    bool simulating = false;
     while (!WindowShouldClose()) {
+      if (IsKeyPressed(KEY_SPACE)) {
+        simulating = !simulating;
+        accumulator = 0.0f;
+      }
+
       if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         if (IsKeyDown(KEY_LEFT_SHIFT))
           Pan(camera);
@@ -146,18 +152,20 @@ public:
 
       const Ray ray = GetMouseRay(GetMousePosition(), camera);
       const Vector3 direction = Vector3Normalize(ray.direction);
-      accumulator = std::min(accumulator + GetFrameTime(),
-                             max_steps_per_frame * configuration.parameters.delta_time);
-      while (accumulator >= configuration.parameters.delta_time) {
-        if (configuration.bounds.wand_active)
-          solver.Step(particles, {
-                                     .active = true,
-                                     .origin = {ray.position.x, ray.position.y, ray.position.z},
-                                     .direction = {direction.x, direction.y, direction.z},
-                                 });
-        else
-          solver.Step(particles);
-        accumulator -= configuration.parameters.delta_time;
+      if (simulating) {
+        accumulator = std::min(accumulator + GetFrameTime(),
+                               max_steps_per_frame * configuration.parameters.delta_time);
+        while (accumulator >= configuration.parameters.delta_time) {
+          if (configuration.bounds.wand_active)
+            solver.Step(particles, {
+                                       .active = true,
+                                       .origin = {ray.position.x, ray.position.y, ray.position.z},
+                                       .direction = {direction.x, direction.y, direction.z},
+                                   });
+          else
+            solver.Step(particles);
+          accumulator -= configuration.parameters.delta_time;
+        }
       }
 
       std::ranges::transform(particles.Positions(), instance_matrices.begin(),
