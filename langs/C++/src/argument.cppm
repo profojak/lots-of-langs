@@ -18,6 +18,7 @@ namespace pbf {
 export struct Arguments {
   std::optional<std::string> configuration_file;
   bool no_gui{false};
+  bool dump{false};
   std::vector<std::pair<std::string, std::string>> parameters;
 };
 
@@ -28,11 +29,12 @@ void PrintHelp() {
       "  Options:\n"
       "    -h, --help           Show this help and exit\n"
       "    -n, --no-gui         Run without GUI (headless simulation)\n"
+      "    -d, --dump           Dump final particle positions to 'particles.txt'\n"
       "    -c, --config <file>  Load configuration file (key=value per line)\n\n"
       "  Overrides:\n"
-      "    key=value            Override a configuration value, e.g. visuals.window_width=1280\n"
-      "                         Vectors are comma-separated, e.g. parameters.gravity=0,-9.81,0\n"
-      "                         See configs/default.conf for all keys",
+      "    key=value            Override a configuration value, e.g. 'visuals.window_width=1280'\n"
+      "                         Vectors are comma-separated, e.g. 'parameters.gravity=0,-9.81,0'\n"
+      "                         See 'README.md' or 'configs/default.conf' for all available keys",
       PBF_LANGUAGE);
 }
 
@@ -45,6 +47,8 @@ export Arguments ParseArguments(std::span<char *const> args) {
       std::exit(0);
     } else if (argument == "-n" || argument == "--no-gui") {
       arguments.no_gui = true;
+    } else if (argument == "-d" || argument == "--dump") {
+      arguments.dump = true;
     } else if (argument == "-c" || argument == "--config") {
       if (i + 1 >= args.size())
         throw std::invalid_argument("Missing value for configuration file!");

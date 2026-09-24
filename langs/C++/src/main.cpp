@@ -37,5 +37,14 @@ int main(int argc, char **argv) {
     renderer.Run(particles, solver);
   }
 
+  if (arguments.dump) {
+    try {
+      particles.Dump();
+    } catch (const std::exception &e) {
+      std::println("Particle dump error: {}", e.what());
+      return 3;
+    }
+  }
+
   return 0;
 }

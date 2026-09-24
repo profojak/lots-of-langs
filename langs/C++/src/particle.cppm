@@ -1,6 +1,11 @@
 module;
 
+#include <format>
+#include <fstream>
 #include <ranges>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -86,6 +91,23 @@ public:
       for (std::size_t j : std::views::iota(0uz, particles.resolution[1]))
         for (std::size_t k : std::views::iota(0uz, particles.resolution[2]))
           positions[index++] = start + Vec3f{i, j, k} * size;
+  }
+
+  void Dump(this const Particles &self, std::string_view path = "particles.txt") {
+    std::ofstream file{std::string(path)};
+    if (!file)
+      throw std::runtime_error(std::format("Failed to open particle dump file '{}'!", path));
+
+    file << "x,y,z\n";
+    for (const auto &position : self.Positions()) {
+      file << std::format("{:.8e},{:.8e},{:.8e}\n", position[0], position[1], position[2]);
+      if (!file)
+        throw std::runtime_error(std::format("Failed to write particle dump file '{}'!", path));
+    }
+
+    file.close();
+    if (!file)
+      throw std::runtime_error(std::format("Failed to write particle dump file '{}'!", path));
   }
 };
 
