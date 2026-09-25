@@ -26,28 +26,6 @@ export class Grid {
   std::vector<std::size_t> particle_cells;
   std::vector<std::size_t> particle_indices;
 
-  template <std::size_t Axis>
-  [[nodiscard]] std::size_t CellCoordinateAt(const Vec3f &position) const {
-    const float cell = std::floor((position[Axis] + offset[Axis]) / smoothing_radius);
-    const float clamped = std::clamp(cell, 0.0f, static_cast<float>(dimensions.extent(Axis) - 1uz));
-    return static_cast<std::size_t>(clamped);
-  }
-
-  [[nodiscard]] Vec3u CellCoordinates(const Vec3f &position) const {
-    return {CellCoordinateAt<0>(position), CellCoordinateAt<1>(position),
-            CellCoordinateAt<2>(position)};
-  }
-
-  [[nodiscard]] std::size_t CellIndex(const Vec3u &cell_coordinates) const {
-    return std::layout_left::mapping{dimensions}(cell_coordinates[0], cell_coordinates[1],
-                                                 cell_coordinates[2]);
-  }
-
-  template <std::size_t Axis>
-  [[nodiscard]] std::pair<std::size_t, std::size_t> CellNeighborsCoordinates(std::size_t c) const {
-    return {c == 0 ? 0 : c - 1, std::min(c + 1, dimensions.extent(Axis) - 1uz)};
-  }
-
 public:
   explicit Grid(const Vec3f &domain) {
     std::array<std::size_t, 3> extents{};
@@ -67,7 +45,7 @@ public:
 
   template <typename Self>
   [[nodiscard]] std::span<const std::size_t> operator[](this Self &&self, std::size_t x,
-                                                       std::size_t y, std::size_t z) {
+                                                        std::size_t y, std::size_t z) {
     const std::size_t cell = std::forward<Self>(self).CellIndex({x, y, z});
     const auto first = std::forward<Self>(self).particle_indices.begin();
     return {first + std::forward<Self>(self).cell_offsets[cell],
@@ -115,6 +93,29 @@ public:
           for (const std::size_t j : (*this)[x, y, z])
             if (j != i && (position - positions[j]).LengthSquared() <= max_distance_squared)
               f(j);
+  }
+
+private:
+  template <std::size_t Axis>
+  [[nodiscard]] std::size_t CellCoordinateAt(const Vec3f &position) const {
+    const float cell = std::floor((position[Axis] + offset[Axis]) / smoothing_radius);
+    const float clamped = std::clamp(cell, 0.0f, static_cast<float>(dimensions.extent(Axis) - 1uz));
+    return static_cast<std::size_t>(clamped);
+  }
+
+  [[nodiscard]] Vec3u CellCoordinates(const Vec3f &position) const {
+    return {CellCoordinateAt<0>(position), CellCoordinateAt<1>(position),
+            CellCoordinateAt<2>(position)};
+  }
+
+  [[nodiscard]] std::size_t CellIndex(const Vec3u &cell_coordinates) const {
+    return std::layout_left::mapping{dimensions}(cell_coordinates[0], cell_coordinates[1],
+                                                 cell_coordinates[2]);
+  }
+
+  template <std::size_t Axis>
+  [[nodiscard]] std::pair<std::size_t, std::size_t> CellNeighborsCoordinates(std::size_t c) const {
+    return {c == 0 ? 0 : c - 1, std::min(c + 1, dimensions.extent(Axis) - 1uz)};
   }
 };
 

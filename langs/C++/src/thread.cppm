@@ -23,29 +23,6 @@ export class Threads {
   std::queue<std::function<void()>> tasks;
   std::vector<std::jthread> workers;
 
-  void WorkerLoop(std::stop_token stop) {
-    while (true) {
-      std::function<void()> task;
-      {
-        std::unique_lock lock(mutex);
-        task_available.wait(lock, stop, [this] { return !tasks.empty(); });
-        if (tasks.empty())
-          return;
-        task = std::move(tasks.front());
-        tasks.pop();
-      }
-      task();
-    }
-  }
-
-  template <typename F> void Enqueue(F &&task) {
-    {
-      std::lock_guard lock(mutex);
-      tasks.emplace(std::forward<F>(task));
-    }
-    task_available.notify_one();
-  }
-
 public:
   explicit Threads(std::size_t thread_count) {
     if (thread_count == 0)
@@ -84,6 +61,30 @@ public:
     task(begin, count);
     done.count_down();
     done.wait();
+  }
+
+private:
+  void WorkerLoop(std::stop_token stop) {
+    while (true) {
+      std::function<void()> task;
+      {
+        std::unique_lock lock(mutex);
+        task_available.wait(lock, stop, [this] { return !tasks.empty(); });
+        if (tasks.empty())
+          return;
+        task = std::move(tasks.front());
+        tasks.pop();
+      }
+      task();
+    }
+  }
+
+  template <typename F> void Enqueue(F &&task) {
+    {
+      std::lock_guard lock(mutex);
+      tasks.emplace(std::forward<F>(task));
+    }
+    task_available.notify_one();
   }
 };
 

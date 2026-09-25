@@ -39,6 +39,77 @@ export class PBFSolver final : public Solver {
   Threads threads;
   Grid grid;
 
+public:
+  explicit PBFSolver(const Configuration &configuration)
+      : configuration{configuration}, threads{configuration.parameters.threads},
+        grid{configuration.bounds.domain} {}
+
+  void Step(Particles &particles, const Wand &wand = {}) override {
+    const Parameters &parameters = configuration.parameters;
+
+    std::span positions{particles.Positions()};
+    std::span predicted_positions{particles.PredictedPositions()};
+    std::span updated_positions{particles.UpdatedPositions()};
+    std::span velocities{particles.Velocities()};
+    std::span updated_velocities{particles.UpdatedVelocities()};
+    std::span vorticities{particles.Vorticities()};
+    std::span lambdas{particles.Lambdas()};
+
+    if (parameters.delta_time <= 0.0f || positions.empty())
+      return;
+    const auto count = positions.size();
+    const float inv_rest_density = 1.0f / parameters.rest_density;
+
+    if (wand.active)
+      threads.ParallelFor(count, std::bind_back(PushWithWand, velocities, positions,
+                                                std::cref(wand), std::cref(configuration)));
+
+    threads.ParallelFor(
+        count, [positions, predicted_positions, velocities,
+                &parameters = parameters](std::size_t begin, std::size_t end) noexcept {
+          for (std::size_t i = begin; i < end; ++i) {
+            velocities[i] += parameters.gravity * parameters.delta_time;
+            predicted_positions[i] = positions[i] + velocities[i] * parameters.delta_time;
+          }
+        });
+
+    grid.Rebuild(predicted_positions);
+
+    for (unsigned iteration = 0; iteration < parameters.solver_iterations; ++iteration) {
+      threads.ParallelFor(count,
+                          std::bind_back(ComputeLambdas, predicted_positions, lambdas,
+                                         inv_rest_density, std::cref(parameters), std::cref(grid)));
+
+      std::ranges::fill(updated_positions, Vec3f{});
+      threads.ParallelFor(count, std::bind_back(ComputeDeltas, predicted_positions,
+                                                updated_positions, lambdas, inv_rest_density,
+                                                std::cref(configuration), std::cref(grid)));
+
+      threads.ParallelFor(count, [predicted_positions,
+                                  updated_positions](std::size_t begin, std::size_t end) noexcept {
+        for (std::size_t i = begin; i < end; ++i)
+          predicted_positions[i] += updated_positions[i];
+      });
+    }
+
+    threads.ParallelFor(
+        count, [velocities, positions, predicted_positions,
+                &parameters = parameters](std::size_t begin, std::size_t end) noexcept {
+          for (std::size_t i = begin; i < end; ++i)
+            velocities[i] = (predicted_positions[i] - positions[i]) / parameters.delta_time;
+        });
+
+    threads.ParallelFor(count, std::bind_back(ComputeVorticities, predicted_positions, velocities,
+                                              vorticities, std::cref(grid)));
+
+    threads.ParallelFor(count, std::bind_back(ApplyVorticityViscosity, predicted_positions,
+                                              velocities, updated_velocities, vorticities,
+                                              std::cref(parameters), std::cref(grid)));
+    std::ranges::copy(updated_velocities, velocities.begin());
+    std::ranges::copy(predicted_positions, positions.begin());
+  }
+
+private:
   static void ComputeLambdas(std::size_t begin, std::size_t end, std::span<const Vec3f> predictions,
                              std::span<float> lambdas, const float inv_rest_density,
                              const Parameters &parameters, const Grid &grid) noexcept {
@@ -194,76 +265,6 @@ export class PBFSolver final : public Solver {
                                   : Vec3f{0.0f, 1.0f, 0.0f};
       velocities[i] += direction * (impulse * (1.0f - distance / configuration.bounds.wand_radius));
     }
-  }
-
-public:
-  explicit PBFSolver(const Configuration &configuration)
-      : configuration{configuration}, threads{configuration.parameters.threads},
-        grid{configuration.bounds.domain} {}
-
-  void Step(Particles &particles, const Wand &wand = {}) override {
-    const Parameters &parameters = configuration.parameters;
-
-    std::span positions{particles.Positions()};
-    std::span predicted_positions{particles.PredictedPositions()};
-    std::span updated_positions{particles.UpdatedPositions()};
-    std::span velocities{particles.Velocities()};
-    std::span updated_velocities{particles.UpdatedVelocities()};
-    std::span vorticities{particles.Vorticities()};
-    std::span lambdas{particles.Lambdas()};
-
-    if (parameters.delta_time <= 0.0f || positions.empty())
-      return;
-    const auto count = positions.size();
-    const float inv_rest_density = 1.0f / parameters.rest_density;
-
-    if (wand.active)
-      threads.ParallelFor(count, std::bind_back(PushWithWand, velocities, positions,
-                                                std::cref(wand), std::cref(configuration)));
-
-    threads.ParallelFor(
-        count, [positions, predicted_positions, velocities,
-                &parameters = parameters](std::size_t begin, std::size_t end) noexcept {
-          for (std::size_t i = begin; i < end; ++i) {
-            velocities[i] += parameters.gravity * parameters.delta_time;
-            predicted_positions[i] = positions[i] + velocities[i] * parameters.delta_time;
-          }
-        });
-
-    grid.Rebuild(predicted_positions);
-
-    for (unsigned iteration = 0; iteration < parameters.solver_iterations; ++iteration) {
-      threads.ParallelFor(count,
-                          std::bind_back(ComputeLambdas, predicted_positions, lambdas,
-                                         inv_rest_density, std::cref(parameters), std::cref(grid)));
-
-      std::ranges::fill(updated_positions, Vec3f{});
-      threads.ParallelFor(count, std::bind_back(ComputeDeltas, predicted_positions,
-                                                updated_positions, lambdas, inv_rest_density,
-                                                std::cref(configuration), std::cref(grid)));
-
-      threads.ParallelFor(count, [predicted_positions,
-                                  updated_positions](std::size_t begin, std::size_t end) noexcept {
-        for (std::size_t i = begin; i < end; ++i)
-          predicted_positions[i] += updated_positions[i];
-      });
-    }
-
-    threads.ParallelFor(
-        count, [velocities, positions, predicted_positions,
-                &parameters = parameters](std::size_t begin, std::size_t end) noexcept {
-          for (std::size_t i = begin; i < end; ++i)
-            velocities[i] = (predicted_positions[i] - positions[i]) / parameters.delta_time;
-        });
-
-    threads.ParallelFor(count, std::bind_back(ComputeVorticities, predicted_positions, velocities,
-                                              vorticities, std::cref(grid)));
-
-    threads.ParallelFor(count, std::bind_back(ApplyVorticityViscosity, predicted_positions,
-                                              velocities, updated_velocities, vorticities,
-                                              std::cref(parameters), std::cref(grid)));
-    std::ranges::copy(updated_velocities, velocities.begin());
-    std::ranges::copy(predicted_positions, positions.begin());
   }
 };
 

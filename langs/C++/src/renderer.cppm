@@ -60,52 +60,6 @@ export class Renderer {
   std::vector<Matrix> instance_matrices;
   int radius_uniform{-1};
 
-  inline void Pan(Camera3D &camera) {
-    const Vector2 delta = GetMouseDelta();
-    const Vector3 up = Vector3Normalize(camera.up);
-    const Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
-    const Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, up));
-    const Vector3 camera_up = Vector3CrossProduct(right, forward);
-
-    const float speed = Vector3Distance(camera.position, camera.target) *
-                        configuration.visuals.mouse_pan_sensitivity;
-    const Vector3 offset =
-        Vector3Add(Vector3Scale(right, -delta.x * speed), Vector3Scale(camera_up, delta.y * speed));
-    camera.position = Vector3Add(camera.position, offset);
-    camera.target = Vector3Add(camera.target, offset);
-  }
-
-  inline void Orbit(Camera3D &camera) {
-    const Vector2 delta = GetMouseDelta();
-    const float yaw = -delta.x * configuration.visuals.mouse_orbit_sensitivity;
-    float pitch = -delta.y * configuration.visuals.mouse_orbit_sensitivity;
-
-    const Vector3 up = Vector3Normalize(camera.up);
-    Vector3 view = Vector3Subtract(camera.target, camera.position);
-
-    const float max_angle_up = Vector3Angle(up, view) - 0.001f;
-    if (pitch > max_angle_up)
-      pitch = max_angle_up;
-    const float max_angle_down = -Vector3Angle(Vector3Negate(up), view) + 0.001f;
-    if (pitch < max_angle_down)
-      pitch = max_angle_down;
-
-    view = Vector3RotateByAxisAngle(view, up, yaw);
-    view = Vector3RotateByAxisAngle(
-        view, Vector3Normalize(Vector3CrossProduct(Vector3Normalize(view), up)), pitch);
-    camera.position = Vector3Subtract(camera.target, view);
-  }
-
-  inline void Zoom(Camera3D &camera) {
-    const float distance =
-        std::max(Vector3Distance(camera.position, camera.target) *
-                     std::exp(-configuration.visuals.mouse_wheel_sensitivity * GetMouseWheelMove()),
-                 0.001f);
-    camera.position = Vector3Add(
-        camera.target,
-        Vector3Scale(Vector3Normalize(Vector3Subtract(camera.target, camera.position)), -distance));
-  }
-
 public:
   explicit Renderer(const Configuration &configuration) : configuration{configuration} {
     SetTraceLogLevel(LOG_WARNING);
@@ -216,6 +170,53 @@ public:
       EndMode3D();
       EndDrawing();
     }
+  }
+
+private:
+  inline void Pan(Camera3D &camera) {
+    const Vector2 delta = GetMouseDelta();
+    const Vector3 up = Vector3Normalize(camera.up);
+    const Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+    const Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, up));
+    const Vector3 camera_up = Vector3CrossProduct(right, forward);
+
+    const float speed = Vector3Distance(camera.position, camera.target) *
+                        configuration.visuals.mouse_pan_sensitivity;
+    const Vector3 offset =
+        Vector3Add(Vector3Scale(right, -delta.x * speed), Vector3Scale(camera_up, delta.y * speed));
+    camera.position = Vector3Add(camera.position, offset);
+    camera.target = Vector3Add(camera.target, offset);
+  }
+
+  inline void Orbit(Camera3D &camera) {
+    const Vector2 delta = GetMouseDelta();
+    const float yaw = -delta.x * configuration.visuals.mouse_orbit_sensitivity;
+    float pitch = -delta.y * configuration.visuals.mouse_orbit_sensitivity;
+
+    const Vector3 up = Vector3Normalize(camera.up);
+    Vector3 view = Vector3Subtract(camera.target, camera.position);
+
+    const float max_angle_up = Vector3Angle(up, view) - 0.001f;
+    if (pitch > max_angle_up)
+      pitch = max_angle_up;
+    const float max_angle_down = -Vector3Angle(Vector3Negate(up), view) + 0.001f;
+    if (pitch < max_angle_down)
+      pitch = max_angle_down;
+
+    view = Vector3RotateByAxisAngle(view, up, yaw);
+    view = Vector3RotateByAxisAngle(
+        view, Vector3Normalize(Vector3CrossProduct(Vector3Normalize(view), up)), pitch);
+    camera.position = Vector3Subtract(camera.target, view);
+  }
+
+  inline void Zoom(Camera3D &camera) {
+    const float distance =
+        std::max(Vector3Distance(camera.position, camera.target) *
+                     std::exp(-configuration.visuals.mouse_wheel_sensitivity * GetMouseWheelMove()),
+                 0.001f);
+    camera.position = Vector3Add(
+        camera.target,
+        Vector3Scale(Vector3Normalize(Vector3Subtract(camera.target, camera.position)), -distance));
   }
 };
 

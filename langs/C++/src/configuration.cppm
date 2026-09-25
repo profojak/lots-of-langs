@@ -65,6 +65,7 @@ export struct Configuration {
     float mouse_wheel_sensitivity = 0.01f;
   } visuals;
 
+public:
   void LoadFromFile(std::string_view path);
   void LoadFromArguments(const Arguments &args);
 
