@@ -7,6 +7,8 @@ module;
 #include <cmath>
 #include <concepts>
 #include <format>
+#include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -46,8 +48,13 @@ void main() {
 }
 
 export class Renderer {
+  static constexpr std::string_view font_path =
+      "/Users/profojak/Projects/Me/lots-of-langs/josefka.ttf";
+  static constexpr int font_size = 24.0f;
+
   const Configuration &configuration;
 
+  Font font{};
   Mesh mesh{};
   Material material{};
   std::vector<Matrix> instance_matrices;
@@ -106,6 +113,7 @@ public:
                std::format("Position Based Fluids in {}", PBF_LANGUAGE).c_str());
     SetTargetFPS(60);
 
+    font = LoadFontEx(font_path.data(), font_size, nullptr, 0);
     mesh = GenMeshSphere(1.0f, 8, 8);
     material = LoadMaterialDefault();
     material.shader = LoadShaderFromMemory(shader::vertex, nullptr);
@@ -117,6 +125,8 @@ public:
   Renderer &operator=(const Renderer &) = delete;
 
   ~Renderer() {
+    if (IsFontValid(font))
+      UnloadFont(font);
     UnloadMaterial(material);
     UnloadMesh(mesh);
     CloseWindow();
