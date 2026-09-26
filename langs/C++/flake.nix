@@ -63,7 +63,7 @@
           version = "0.0.0";
           src = ./.;
           inherit configurePhase buildPhase installPhase;
-          buildInputs = [ pkgs.raylib ];
+          buildInputs = [ pkgs.raylib pkgs.raygui ];
           meta.mainProgram = "pbf";
         };
 
@@ -82,6 +82,7 @@
             pkgs.clang
             pkgs.clang-tools
             pkgs.raylib
+            pkgs.raygui
           ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
             pkgs.apple-sdk
           ];
@@ -97,6 +98,7 @@
               echo '    - -I${pkgs.raylib}/include'
               echo '    - -isystem'
               echo '    - ${pkgs.libcxx.dev}/include/c++/v1'
+              echo '    - -I${pkgs.raygui}/include'
               echo '    - -isystem'
               echo '    - ${pkgs.libcxx.dev}/include'
               for f in result/build/*.pcm; do
