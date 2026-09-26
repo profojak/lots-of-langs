@@ -65,6 +65,8 @@ public:
     SetTraceLogLevel(LOG_WARNING);
     InitWindow(configuration.visuals.window_width, configuration.visuals.window_height,
                std::format("Position Based Fluids in {}", PBF_LANGUAGE).c_str());
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
+    SetWindowMinSize(320, 240);
     SetTargetFPS(60);
 
     font = LoadFontEx(font_path.data(), font_size, nullptr, 0);
