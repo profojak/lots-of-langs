@@ -9,7 +9,8 @@
 
   A&nbsp;single fluid simulation program written in&nbsp;many languages!
 
-  <img src="header.gif" alt="Blue fluid particles falling and splashing." width="640"/>
+  <img src="https://raw.githubusercontent.com/profojak/profojak/main/media/lots-of-langs/header.gif"
+    alt="Blue fluid particles falling and splashing." width="640"/>
 
   <sup>Written with ❤️ by hand to learn!</sup>
 </div>
