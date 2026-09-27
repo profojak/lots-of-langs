@@ -26,7 +26,7 @@ namespace pbf {
 
 export struct Configuration {
   struct Particles {
-    Vec3f origin{0.0f, 0.25f, 0.0f};
+    Vec3f origin{0.0f, 0.5f, 0.0f};
     Vec3f size{1.0f, 1.25f, 1.0f};
     Vec3u resolution{20, 25, 20};
     float radius = 0.02f;
