@@ -1,3 +1,4 @@
+#include <chrono>
 #include <print>
 
 import argument;
@@ -39,8 +40,12 @@ int main(int argc, char **argv) {
   pbf::PBFSolver solver{configuration};
 
   if (arguments.no_gui) {
+    auto start = std::chrono::steady_clock::now();
     for (unsigned step = 0; step < configuration.parameters.simulation_steps; ++step)
       solver.Step(particles);
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration<double, std::milli>(end - start).count();
+    std::println("Run took {:.0f} ms", duration);
   } else {
     pbf::Renderer renderer{configuration};
     renderer.Run(particles, solver);
