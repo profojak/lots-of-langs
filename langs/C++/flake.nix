@@ -40,12 +40,15 @@
 
         buildPhase = ''
           runHook preBuild
+          start=$(date +%s%N)
           for m in ${toString cxxModules}; do
             $CXX ${pkgs.lib.escapeShellArgs cxxFlags} -fprebuilt-module-path=build \
               -fmodule-output="build/$m.pcm" -c "src/$m.cppm" -o "build/$m.o"
           done
           $CXX ${pkgs.lib.escapeShellArgs cxxFlags} -fprebuilt-module-path=build -c src/main.cpp -o build/main.o
           $CXX ${pkgs.lib.escapeShellArgs cxxFlags} build/*.o -o pbf -lraylib
+          end=$(date +%s%N)
+          echo "Build took $(( (end - start) / 1000000 )) ms"
           runHook postBuild
         '';
 
