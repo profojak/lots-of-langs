@@ -11,8 +11,15 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, raygui }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      raygui,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs { inherit system; };
         libraygui = raygui.packages.${system}.default;
@@ -22,7 +29,8 @@
           "-std=c++23"
           "-O3"
           "-DPBF_LANGUAGE=\"C++23\""
-        ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
+        ]
+        ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
           "-mmacosx-version-min=26.0"
         ];
         cxxModules = [
@@ -66,7 +74,8 @@
           runHook postInstall
         '';
 
-      in {
+      in
+      {
         packages.default = clangStdenv.mkDerivation {
           pname = "pbf";
           version = "0.0.0";
@@ -82,10 +91,18 @@
         defaultPackage = self.packages.${system}.default;
         packages.pbf = self.packages.${system}.default;
 
-        formatter = pkgs.writeShellScriptBin "formatter" ''
-          find src -type f \( -name '*.cpp' -o -name '*.cppm' -o -name '*.h' -o -name '*.hpp' \) \
-            -exec ${pkgs.clang-tools}/bin/clang-format -i {} +
-        '';
+        formatter = pkgs.writeShellApplication {
+          name = "formatter";
+          runtimeInputs = [
+            pkgs.clang-tools
+            pkgs.nixfmt
+          ];
+          text = ''
+            find src -type f \( -name '*.cpp' -o -name '*.cppm' \) \
+              -exec clang-format -i {} +
+            nixfmt flake.nix
+          '';
+        };
 
         devShells.default = mkShell {
           inherit configurePhase buildPhase;
@@ -95,7 +112,8 @@
             pkgs.clang-tools
             pkgs.raylib
             pkgs.raygui
-          ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
+          ]
+          ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
             pkgs.apple-sdk
           ];
 
@@ -123,5 +141,6 @@
             clang++ --version | head -n1
           '';
         };
-      });
+      }
+    );
 }
