@@ -6,48 +6,53 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-  }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
     flake-utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {inherit system;};
+      system:
+      let
+        pkgs = import nixpkgs { inherit system; };
 
         version = pkgs.raygui.version;
         majorVersion = pkgs.lib.versions.major version;
         darwinVersion =
-          if builtins.match "[0-9]+\\.[0-9]+\\.[0-9]+" version != null
-          then version else "${version}.0";
+          if builtins.match "[0-9]+\\.[0-9]+\\.[0-9]+" version != null then version else "${version}.0";
 
         src = pkgs.raygui.src;
         isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
         libExtension = if isDarwin then "dylib" else "so";
 
         buildCommand =
-          if isDarwin then ''
-            $CC -fPIC -I"$src/src" raygui_impl.c -lraylib -dynamiclib \
-              -install_name "$out/lib/libraygui.dylib" \
-              -compatibility_version ${darwinVersion} -current_version ${darwinVersion} \
-              -o libraygui.dylib
-          ''
-          else ''
-            $CC -fPIC -I"$src/src" raygui_impl.c -lraylib -shared \
-              -Wl,-soname,libraygui.so.${majorVersion} -o libraygui.so.${version}
-            ln -s libraygui.so.${version} libraygui.so.${majorVersion}
-            ln -s libraygui.so.${majorVersion} libraygui.so
-          '';
+          if isDarwin then
+            ''
+              $CC -fPIC -I"$src/src" raygui_impl.c -lraylib -dynamiclib \
+                -install_name "$out/lib/libraygui.dylib" \
+                -compatibility_version ${darwinVersion} -current_version ${darwinVersion} \
+                -o libraygui.dylib
+            ''
+          else
+            ''
+              $CC -fPIC -I"$src/src" raygui_impl.c -lraylib -shared \
+                -Wl,-soname,libraygui.so.${majorVersion} -o libraygui.so.${version}
+              ln -s libraygui.so.${version} libraygui.so.${majorVersion}
+              ln -s libraygui.so.${majorVersion} libraygui.so
+            '';
 
         installCommand =
-          if isDarwin then ''
-            install -m755 libraygui.dylib $out/lib/
-          ''
-          else ''
-            install -m755 libraygui.so.${version} $out/lib/
-            ln -s libraygui.so.${version} $out/lib/libraygui.so.${majorVersion}
-            ln -s libraygui.so.${majorVersion} $out/lib/libraygui.so
-          '';
+          if isDarwin then
+            ''
+              install -m755 libraygui.dylib $out/lib/
+            ''
+          else
+            ''
+              install -m755 libraygui.so.${version} $out/lib/
+              ln -s libraygui.so.${version} $out/lib/libraygui.so.${majorVersion}
+              ln -s libraygui.so.${majorVersion} $out/lib/libraygui.so
+            '';
 
         checkFile = if isDarwin then "libraygui.dylib" else "libraygui.so.${version}";
 
@@ -134,10 +139,11 @@
             homepage = "https://github.com/raysan5/raygui";
             license = pkgs.lib.licenses.zlib;
             platforms = pkgs.raylib.meta.platforms;
-            pkgConfigModules = ["raygui"];
+            pkgConfigModules = [ "raygui" ];
           };
         };
-      in {
+      in
+      {
         packages = {
           default = libraygui;
           inherit libraygui;
@@ -146,6 +152,8 @@
         checks = {
           inherit libraygui;
         };
+
+        formatter = pkgs.nixfmt-tree;
 
         devShells.default = pkgs.mkShell {
           packages = [
