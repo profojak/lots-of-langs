@@ -4,12 +4,18 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    raygui = {
+      url = "path:../../utils/raygui";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, raygui }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        libraygui = raygui.packages.${system}.default;
         clangStdenv = pkgs.overrideCC pkgs.stdenv pkgs.clang;
         mkShell = pkgs.mkShell.override { stdenv = clangStdenv; };
         cxxFlags = [
@@ -46,7 +52,7 @@
               -fmodule-output="build/$m.pcm" -c "src/$m.cppm" -o "build/$m.o"
           done
           $CXX ${pkgs.lib.escapeShellArgs cxxFlags} -fprebuilt-module-path=build -c src/main.cpp -o build/main.o
-          $CXX ${pkgs.lib.escapeShellArgs cxxFlags} build/*.o -o pbf -lraylib
+          $CXX ${pkgs.lib.escapeShellArgs cxxFlags} build/*.o -o pbf -lraygui -lraylib
           end=$(date +%s%N)
           echo "Build took $(( (end - start) / 1000000 )) ms"
           runHook postBuild
@@ -66,7 +72,10 @@
           version = "0.0.0";
           src = ./.;
           inherit configurePhase buildPhase installPhase;
-          buildInputs = [ pkgs.raylib pkgs.raygui ];
+          buildInputs = [
+            pkgs.raylib
+            libraygui
+          ];
           meta.mainProgram = "pbf";
         };
 
@@ -101,7 +110,7 @@
               echo '    - -I${pkgs.raylib}/include'
               echo '    - -isystem'
               echo '    - ${pkgs.libcxx.dev}/include/c++/v1'
-              echo '    - -I${pkgs.raygui}/include'
+              echo '    - -I${libraygui}/include'
               echo '    - -isystem'
               echo '    - ${pkgs.libcxx.dev}/include'
               for f in result/build/*.pcm; do

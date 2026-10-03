@@ -34,10 +34,30 @@
         "type": "github"
       }
     },
+    "raygui": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "../../utils/raygui",
+        "type": "path"
+      },
+      "original": {
+        "path": "../../utils/raygui",
+        "type": "path"
+      },
+      "parent": []
+    },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "raygui": "raygui"
       }
     },
     "systems": {
