@@ -99,7 +99,13 @@ public:
                .up = {0.0f, 1.0f, 0.0f},
                .fovy = 45.0f,
                .projection = CAMERA_PERSPECTIVE} {
+
+#ifndef NDEBUG
+    SetTraceLogLevel(LOG_DEBUG);
+#else
     SetTraceLogLevel(LOG_WARNING);
+#endif
+
     InitWindow(static_cast<int>(configuration.visuals.window_width),
                static_cast<int>(configuration.visuals.window_height),
                std::format("Position Based Fluids in {}", PBF_LANGUAGE).c_str());

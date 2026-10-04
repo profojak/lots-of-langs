@@ -28,6 +28,7 @@
         cxxFlags = [
           "-std=c++23"
           "-O3"
+          "-DNDEBUG"
           "-DPBF_LANGUAGE=\"C++23\""
         ]
         ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
@@ -123,6 +124,7 @@
               echo '  Compiler: ${pkgs.llvmPackages.clang-unwrapped}/bin/clang++'
               echo '  Add:'
               echo '    - -std=c++23'
+              echo '    - -DNDEBUG'
               ${pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isDarwin "echo '    - -mmacosx-version-min=26.0'"}
               echo '    - -DPBF_LANGUAGE="C++23"'
               echo '    - -I${pkgs.raylib}/include'
