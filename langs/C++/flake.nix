@@ -62,9 +62,17 @@
           done
           $CXX ${pkgs.lib.escapeShellArgs cxxFlags} -fprebuilt-module-path=build -c src/main.cpp -o build/main.o
           $CXX ${pkgs.lib.escapeShellArgs cxxFlags} build/*.o -o pbf -lraygui -lraylib
+          $CXX ${pkgs.lib.escapeShellArgs cxxFlags} -fprebuilt-module-path=build \
+            src/test.cpp build/vector.o build/kernel.o -o build/test
           end=$(date +%s%N)
           echo "Build took $(( (end - start) / 1000000 )) ms"
           runHook postBuild
+        '';
+
+        checkPhase = ''
+          runHook preCheck
+          ./build/test
+          runHook postCheck
         '';
 
         installPhase = ''
@@ -81,7 +89,13 @@
           pname = "pbf";
           version = "0.0.0";
           src = ./.;
-          inherit configurePhase buildPhase installPhase;
+          inherit
+            configurePhase
+            buildPhase
+            checkPhase
+            installPhase
+            ;
+          doCheck = true;
           buildInputs = [
             pkgs.raylib
             libraygui
@@ -106,7 +120,7 @@
         };
 
         devShells.default = mkShell {
-          inherit configurePhase buildPhase;
+          inherit configurePhase buildPhase checkPhase;
 
           packages = [
             pkgs.clang
